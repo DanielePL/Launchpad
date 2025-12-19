@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
+All colors MUST be HSL. Matching prometheus_coach exactly.
+*/
+
+@layer base {
+  :root {
+    /* Prometheus Coach Light Theme */
+    --background: 0 0% 98%;
+    --background-secondary: 0 0% 95%;
+    --foreground: 0 0% 10%;
+
+    /* Glassmorphic layers */
+    --glass: 0 0% 100% / 0.3;
+    --glass-border: 0 0% 100% / 0.4;
+    --glass-hover: 0 0% 100% / 0.45;
+
+    /* Prometheus Orange - Primary accent */
+    --primary: 23 87% 55%;
+    --primary-glow: 23 87% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary grays */
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 0 0% 20%;
+
+    /* Muted elements */
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Accent states */
+    --accent: 23 87% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    /* UI Elements */
+    --card: 0 0% 100% / 0.35;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    --border: 0 0% 0% / 0.08;
+    --input: 0 0% 0% / 0.08;
+    --ring: 23 87% 55%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 100% 51%;
+    --warning-foreground: 0 0% 10%;
+
+    --info: 207 90% 54%;
+    --info-foreground: 0 0% 100%;
+
+    --radius: 1.5rem;
+
+    /* Gradients */
+    --gradient-light: linear-gradient(135deg, hsl(0 0% 100% / 0.5), hsl(0 0% 100% / 0.3));
+    --gradient-glass: linear-gradient(135deg,
+      hsl(0 0% 100% / 0.4),
+      hsl(0 0% 100% / 0.2));
+    --gradient-orange: linear-gradient(135deg,
+      hsl(23 87% 55%),
+      hsl(23 87% 45%));
+
+    /* Shadows & Glows */
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    --glow-orange: 0 0 30px hsl(23 87% 55% / 0.3);
+    --glow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+
+    /* Primary RGB for hover effects */
+    --primary-rgb: 242, 121, 53;
+
+    /* Chart colors */
+    --chart-1: 24 95% 53%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 160 84% 39%;
+    --chart-4: 43 96% 56%;
+    --chart-5: 23 87% 55%;
+  }
+
+  .dark {
+    /* Prometheus Coach Dark Theme */
+    --background: 0 0% 8%;
+    --background-secondary: 0 0% 12%;
+    --foreground: 0 0% 98%;
+
+    /* Glassmorphic layers for dark mode */
+    --glass: 0 0% 20% / 0.4;
+    --glass-border: 0 0% 100% / 0.1;
+    --glass-hover: 0 0% 25% / 0.5;
+
+    /* Primary colors remain the same */
+    --primary: 23 87% 55%;
+    --primary-glow: 23 87% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary grays for dark */
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 90%;
+
+    /* Muted elements */
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 60%;
+
+    /* Accent states */
+    --accent: 23 87% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    /* UI Elements */
+    --card: 0 0% 15% / 0.4;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --border: 0 0% 100% / 0.12;
+    --input: 0 0% 100% / 0.12;
+    --ring: 23 87% 55%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 100% 51%;
+    --warning-foreground: 0 0% 10%;
+
+    --info: 207 90% 54%;
+    --info-foreground: 0 0% 100%;
+
+    /* Shadows & Glows for dark */
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    --glow-orange: 0 0 30px hsl(23 87% 55% / 0.4);
+    --glow-soft: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground;
+    font-family: 'Poppins', sans-serif;
+    background-color: hsl(var(--background));
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism - matching coach app */
+  .glass {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .dark .glass {
+    background: rgba(50, 50, 50, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-hover {
+    @apply transition-all duration-300 hover:bg-opacity-60 hover:border-opacity-20;
+  }
+
+  /* Orange glow effect */
+  .glow-orange {
+    box-shadow: var(--glow-orange);
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
