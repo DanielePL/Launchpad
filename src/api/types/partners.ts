@@ -1,5 +1,6 @@
 export interface Partner {
   id: string;
+  partner_id?: string; // From partner_statistics view, normalized to id
   name: string;
   email: string;
   referral_code: string;

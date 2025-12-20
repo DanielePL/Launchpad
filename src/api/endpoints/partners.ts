@@ -6,10 +6,16 @@ import type {
   PendingPayout,
 } from "../types/partners";
 
+// Helper to normalize partner ID field (API returns partner_id from view, id from table)
+const normalizePartner = (partner: Partner & { partner_id?: string }): Partner => ({
+  ...partner,
+  id: partner.id || partner.partner_id || "",
+});
+
 export const partnersApi = {
   getAll: async (): Promise<Partner[]> => {
     const response = await adminApi.get("/partners");
-    return response.data;
+    return (response.data || []).map(normalizePartner);
   },
 
   create: async (

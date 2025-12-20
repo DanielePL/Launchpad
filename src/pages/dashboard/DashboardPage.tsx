@@ -584,9 +584,10 @@ export function DashboardPage() {
           ) : recentReferrals.length > 0 ? (
             <div className="space-y-2">
               {recentReferrals.map((referral) => (
-                <div
+                <Link
                   key={referral.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-background/50"
+                  to={`/partners/${referral.partner_id}`}
+                  className="flex items-center justify-between p-3 rounded-xl bg-background/50 hover:bg-background/70 transition-smooth"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{referral.partner_name || "Partner"}</p>
@@ -602,7 +603,7 @@ export function DashboardPage() {
                       {format(parseISO(referral.referral_date), "MMM d")}
                     </p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (
