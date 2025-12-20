@@ -1,9 +1,8 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 // Pages
-import { LoginPage } from "@/pages/auth/LoginPage";
 import { DashboardPage } from "@/pages/dashboard/DashboardPage";
 import { CostsOverviewPage } from "@/pages/costs/CostsOverviewPage";
 import { FixedCostsPage } from "@/pages/costs/FixedCostsPage";
@@ -19,7 +18,7 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 export const router = createBrowserRouter([
   {
     path: "/login",
-    element: <LoginPage />,
+    element: <Navigate to="/" replace />,
   },
   {
     path: "/",

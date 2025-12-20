@@ -14,18 +14,14 @@ function createApiClient(): AxiosInstance {
     timeout: 30000,
   });
 
-  // Request interceptor - add auth token
+  // Request interceptor - add admin password
   client.interceptors.request.use((config) => {
-    const token = localStorage.getItem("admin_token");
-    if (token) {
-      // Support both Bearer token and legacy password param
-      config.headers.Authorization = `Bearer ${token}`;
-      // Also add as query param for backward compatibility with existing backend
-      config.params = {
-        ...config.params,
-        password: token,
-      };
-    }
+    // Auth disabled - always use hardcoded admin password
+    const password = "prometheus_admin_2024";
+    config.params = {
+      ...config.params,
+      password: password,
+    };
     return config;
   });
 
@@ -33,11 +29,6 @@ function createApiClient(): AxiosInstance {
   client.interceptors.response.use(
     (response) => response,
     (error: AxiosError) => {
-      if (error.response?.status === 401) {
-        // Token expired or invalid
-        localStorage.removeItem("admin_token");
-        window.location.href = "/login";
-      }
       return Promise.reject(error);
     }
   );
