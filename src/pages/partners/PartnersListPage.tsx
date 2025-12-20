@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Users,
@@ -16,6 +16,9 @@ import {
   Clock,
   Trophy,
   Flame,
+  Sparkles,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import {
   usePartners,
@@ -44,12 +47,75 @@ function formatNumber(num: number): string {
 
 interface PartnerFormProps {
   partner?: Partner;
+  existingCodes: string[];
   onSubmit: (data: CreatePartnerInput) => void;
   onCancel: () => void;
   isLoading: boolean;
 }
 
-function PartnerForm({ partner, onSubmit, onCancel, isLoading }: PartnerFormProps) {
+// Clean string for referral code (uppercase, alphanumeric + underscore only)
+function cleanCode(str: string): string {
+  return str.toUpperCase().replace(/[^A-Z0-9_]/g, "");
+}
+
+// Generate code suggestions based on available data
+function generateCodeSuggestions(
+  name: string,
+  instagram: string,
+  commission: number,
+  existingCodes: string[]
+): string[] {
+  const suggestions: string[] = [];
+  const takenSet = new Set(existingCodes.map((c) => c.toUpperCase()));
+
+  // Try Instagram handle first (most unique)
+  if (instagram) {
+    const igCode = cleanCode(instagram);
+    if (igCode && !takenSet.has(igCode)) {
+      suggestions.push(igCode);
+    }
+  }
+
+  // Try name-based codes
+  if (name) {
+    const baseName = cleanCode(name.split(" ")[0]); // First name/word only
+
+    // NAME + commission (e.g., DANIEL20)
+    const nameCommission = `${baseName}${commission}`;
+    if (!takenSet.has(nameCommission)) {
+      suggestions.push(nameCommission);
+    }
+
+    // Just NAME
+    if (!takenSet.has(baseName)) {
+      suggestions.push(baseName);
+    }
+
+    // NAME + random 3 digits
+    for (let i = 0; i < 3; i++) {
+      const randomNum = Math.floor(Math.random() * 900) + 100;
+      const nameRandom = `${baseName}${randomNum}`;
+      if (!takenSet.has(nameRandom) && !suggestions.includes(nameRandom)) {
+        suggestions.push(nameRandom);
+        break;
+      }
+    }
+
+    // NAME_FIT, NAME_PRO variations
+    const suffixes = ["FIT", "PRO", "VIP", "TEAM"];
+    for (const suffix of suffixes) {
+      const nameSuffix = `${baseName}_${suffix}`;
+      if (!takenSet.has(nameSuffix) && !suggestions.includes(nameSuffix)) {
+        suggestions.push(nameSuffix);
+        break;
+      }
+    }
+  }
+
+  return suggestions.slice(0, 4); // Return max 4 suggestions
+}
+
+function PartnerForm({ partner, existingCodes, onSubmit, onCancel, isLoading }: PartnerFormProps) {
   const [formData, setFormData] = useState<CreatePartnerInput>({
     name: partner?.name || "",
     email: partner?.email || "",
@@ -62,9 +128,38 @@ function PartnerForm({ partner, onSubmit, onCancel, isLoading }: PartnerFormProp
     notes: partner?.notes || "",
   });
 
+  // Check if current code is available
+  const codeStatus = useMemo(() => {
+    const code = (formData.referral_code || "").toUpperCase();
+    if (!code) return "empty";
+    // When editing, allow keeping the same code
+    if (partner?.referral_code?.toUpperCase() === code) return "available";
+    return existingCodes.some((c) => c.toUpperCase() === code) ? "taken" : "available";
+  }, [formData.referral_code, existingCodes, partner?.referral_code]);
+
+  // Generate suggestions
+  const suggestions = useMemo(() => {
+    return generateCodeSuggestions(
+      formData.name,
+      formData.instagram_handle || "",
+      formData.commission_percent || 20,
+      existingCodes
+    );
+  }, [formData.name, formData.instagram_handle, formData.commission_percent, existingCodes]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (codeStatus === "taken") {
+      alert("Referral code is already taken. Please choose a different one.");
+      return;
+    }
     onSubmit(formData);
+  };
+
+  const handleGenerate = () => {
+    if (suggestions.length > 0) {
+      setFormData({ ...formData, referral_code: suggestions[0] });
+    }
   };
 
   return (
@@ -97,12 +192,70 @@ function PartnerForm({ partner, onSubmit, onCancel, isLoading }: PartnerFormProp
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Referral Code</label>
-          <Input
-            value={formData.referral_code}
-            onChange={(e) => setFormData({ ...formData, referral_code: e.target.value.toUpperCase() })}
-            placeholder="Leave empty to auto-generate"
-            className="rounded-xl"
-          />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                value={formData.referral_code}
+                onChange={(e) => setFormData({ ...formData, referral_code: cleanCode(e.target.value) })}
+                placeholder="e.g., FITNESSJULIA"
+                className={`rounded-xl pr-10 ${
+                  codeStatus === "taken"
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : codeStatus === "available"
+                    ? "border-green-500 focus-visible:ring-green-500"
+                    : ""
+                }`}
+              />
+              {formData.referral_code && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {codeStatus === "available" ? (
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-destructive" />
+                  )}
+                </div>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGenerate}
+              className="rounded-xl shrink-0"
+              disabled={suggestions.length === 0}
+            >
+              <Sparkles className="w-4 h-4" />
+            </Button>
+          </div>
+          {codeStatus === "taken" && suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              <span className="text-xs text-muted-foreground">Vorschläge:</span>
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, referral_code: suggestion })}
+                  className="px-2 py-0.5 text-xs rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+          {codeStatus === "empty" && suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              <span className="text-xs text-muted-foreground">Klicke auf ✨ oder wähle:</span>
+              {suggestions.slice(0, 3).map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, referral_code: suggestion })}
+                  className="px-2 py-0.5 text-xs rounded-md bg-muted text-muted-foreground hover:bg-primary/20 hover:text-primary transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -222,6 +375,12 @@ export function PartnersListPage() {
   const totalReferrals = partners?.reduce((sum, p) => sum + p.total_referrals, 0) || 0;
   const totalEarned = partners?.reduce((sum, p) => sum + p.total_earned, 0) || 0;
   const totalPaid = partners?.reduce((sum, p) => sum + p.total_paid, 0) || 0;
+
+  // Existing referral codes for duplicate checking
+  const existingCodes = useMemo(() =>
+    partners?.map((p) => p.referral_code).filter(Boolean) || [],
+    [partners]
+  );
 
   // Partner monitoring - calculate days since last referral
   const getDaysSinceLastReferral = (lastReferralAt?: string) => {
@@ -497,6 +656,7 @@ export function PartnersListPage() {
       {/* Add/Edit Form */}
       {showForm && (
         <PartnerForm
+          existingCodes={existingCodes}
           onSubmit={handleCreate}
           onCancel={() => setShowForm(false)}
           isLoading={createMutation.isPending}
@@ -506,6 +666,7 @@ export function PartnersListPage() {
       {editingPartner && (
         <PartnerForm
           partner={editingPartner}
+          existingCodes={existingCodes}
           onSubmit={handleUpdate}
           onCancel={() => setEditingPartner(null)}
           isLoading={updateMutation.isPending}
