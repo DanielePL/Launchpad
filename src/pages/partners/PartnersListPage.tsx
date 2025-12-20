@@ -11,6 +11,11 @@ import {
   Copy,
   Check,
   ExternalLink,
+  AlertTriangle,
+  TrendingUp,
+  Clock,
+  Trophy,
+  Flame,
 } from "lucide-react";
 import {
   usePartners,
@@ -218,6 +223,32 @@ export function PartnersListPage() {
   const totalEarned = partners?.reduce((sum, p) => sum + p.total_earned, 0) || 0;
   const totalPaid = partners?.reduce((sum, p) => sum + p.total_paid, 0) || 0;
 
+  // Partner monitoring - calculate days since last referral
+  const getDaysSinceLastReferral = (lastReferralAt?: string) => {
+    if (!lastReferralAt) return Infinity;
+    const lastDate = new Date(lastReferralAt);
+    const now = new Date();
+    return Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  // Needs Attention: Active partners with 0 referrals this month OR no referral in 14+ days
+  const needsAttention = partners?.filter((p) => {
+    if (p.status !== "active") return false;
+    const daysSince = getDaysSinceLastReferral(p.last_referral_at);
+    return (p.referrals_this_month === 0) || daysSince >= 14;
+  }).sort((a, b) => {
+    // Sort by days since last referral (most inactive first)
+    return getDaysSinceLastReferral(b.last_referral_at) - getDaysSinceLastReferral(a.last_referral_at);
+  }) || [];
+
+  // Partner Wins: Partners with referrals this month
+  const partnerWins = partners?.filter((p) => {
+    return (p.referrals_this_month || 0) > 0;
+  }).sort((a, b) => {
+    // Sort by referrals this month (most active first)
+    return (b.referrals_this_month || 0) - (a.referrals_this_month || 0);
+  }) || [];
+
   const handleCreate = async (data: CreatePartnerInput) => {
     await createMutation.mutateAsync(data);
     setShowForm(false);
@@ -334,6 +365,134 @@ export function PartnersListPage() {
           </div>
         </div>
       </div>
+
+      {/* Partner Monitoring Sections */}
+      {!isLoading && (needsAttention.length > 0 || partnerWins.length > 0) && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Needs Attention */}
+          <div className="glass rounded-2xl p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              </div>
+              <div>
+                <h3 className="font-bold">Needs Attention</h3>
+                <p className="text-sm text-muted-foreground">{needsAttention.length} partners inactive</p>
+              </div>
+            </div>
+
+            {needsAttention.length > 0 ? (
+              <div className="space-y-2 max-h-[280px] overflow-y-auto">
+                {needsAttention.slice(0, 5).map((partner) => {
+                  const daysSince = getDaysSinceLastReferral(partner.last_referral_at);
+                  return (
+                    <Link
+                      key={partner.id}
+                      to={`/partners/${partner.id}`}
+                      className="flex items-center justify-between p-3 rounded-xl bg-background/50 hover:bg-background/70 transition-smooth group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-yellow-500/20 text-yellow-500 flex items-center justify-center">
+                          <Clock className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{partner.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {daysSince === Infinity
+                              ? "No referrals yet"
+                              : `${daysSince} days inactive`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-yellow-500">
+                          {partner.referrals_this_month || 0} this month
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {partner.total_referrals} total
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+                {needsAttention.length > 5 && (
+                  <p className="text-xs text-muted-foreground text-center pt-2">
+                    +{needsAttention.length - 5} more partners need attention
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">All partners are performing!</p>
+              </div>
+            )}
+          </div>
+
+          {/* Partner Wins */}
+          <div className="glass rounded-2xl p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-green-500" />
+              </div>
+              <div>
+                <h3 className="font-bold">Partner Wins</h3>
+                <p className="text-sm text-muted-foreground">{partnerWins.length} partners converting</p>
+              </div>
+            </div>
+
+            {partnerWins.length > 0 ? (
+              <div className="space-y-2 max-h-[280px] overflow-y-auto">
+                {partnerWins.slice(0, 5).map((partner, index) => (
+                  <Link
+                    key={partner.id}
+                    to={`/partners/${partner.id}`}
+                    className="flex items-center justify-between p-3 rounded-xl bg-background/50 hover:bg-background/70 transition-smooth group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        index === 0
+                          ? "bg-yellow-500/20 text-yellow-500"
+                          : index === 1
+                          ? "bg-gray-400/20 text-gray-400"
+                          : index === 2
+                          ? "bg-amber-600/20 text-amber-600"
+                          : "bg-green-500/20 text-green-500"
+                      }`}>
+                        {index < 3 ? <Trophy className="w-4 h-4" /> : <Flame className="w-4 h-4" />}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{partner.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {partner.referral_code}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-green-500">
+                        +{partner.referrals_this_month || 0} this month
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatCurrency(partner.total_earned)} earned
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+                {partnerWins.length > 5 && (
+                  <p className="text-xs text-muted-foreground text-center pt-2">
+                    +{partnerWins.length - 5} more winning partners
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <Trophy className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No referrals this month yet</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Add/Edit Form */}
       {showForm && (

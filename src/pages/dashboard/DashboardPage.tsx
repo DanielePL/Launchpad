@@ -14,10 +14,14 @@ import {
   UserPlus,
   Wallet,
   CreditCard,
+  Trophy,
+  AlertTriangle,
+  Clock,
+  Activity,
 } from "lucide-react";
 import { useComprehensiveSummary, useServiceCosts } from "@/hooks/useCosts";
 import { useBreakEven } from "@/hooks/useRevenue";
-import { usePartners, usePendingPayouts } from "@/hooks/usePartners";
+import { usePartners, usePendingPayouts, usePartnerReferrals } from "@/hooks/usePartners";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +61,7 @@ export function DashboardPage() {
   const { data: partners, isLoading: partnersLoading } = usePartners();
   const { data: pendingPayouts, isLoading: payoutsLoading } = usePendingPayouts();
   const { data: dailyCosts, isLoading: dailyLoading } = useDailyCosts(14);
+  const { data: referrals, isLoading: referralsLoading } = usePartnerReferrals();
 
   const isLoading = comprehensiveLoading || serviceLoading || breakEvenLoading;
 
@@ -84,6 +89,29 @@ export function DashboardPage() {
   // Active partners
   const activePartners = partners?.filter(p => p.status === "active").length || 0;
   const totalPendingPayout = pendingPayouts?.total_pending || 0;
+
+  // Partner monitoring
+  const getDaysSinceLastReferral = (lastReferralAt?: string) => {
+    if (!lastReferralAt) return Infinity;
+    const lastDate = new Date(lastReferralAt);
+    const now = new Date();
+    return Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  // Needs Attention: Active partners with 0 referrals this month OR no referral in 14+ days
+  const needsAttention = partners?.filter((p) => {
+    if (p.status !== "active") return false;
+    const daysSince = getDaysSinceLastReferral(p.last_referral_at);
+    return (p.referrals_this_month === 0) || daysSince >= 14;
+  }).slice(0, 3) || [];
+
+  // Partner Wins: Partners with referrals this month
+  const partnerWins = partners?.filter((p) => {
+    return (p.referrals_this_month || 0) > 0;
+  }).sort((a, b) => (b.referrals_this_month || 0) - (a.referrals_this_month || 0)).slice(0, 3) || [];
+
+  // Recent referrals for activity feed
+  const recentReferrals = referrals?.slice(0, 5) || [];
 
   return (
     <div className="space-y-6">
@@ -419,6 +447,171 @@ export function DashboardPage() {
             {pendingPayouts?.pending_payouts?.filter(p => p.eligible).length || 0} partners ready
           </p>
         </Link>
+      </div>
+
+      {/* Partner Monitoring & Activity */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Needs Attention */}
+        <div className="glass rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              </div>
+              <div>
+                <h3 className="font-bold">Needs Attention</h3>
+                <p className="text-xs text-muted-foreground">Inactive partners</p>
+              </div>
+            </div>
+            <Link to="/partners">
+              <Button variant="ghost" size="sm" className="rounded-xl h-8 w-8 p-0">
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {partnersLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-12 rounded-xl" />
+              <Skeleton className="h-12 rounded-xl" />
+            </div>
+          ) : needsAttention.length > 0 ? (
+            <div className="space-y-2">
+              {needsAttention.map((partner) => {
+                const daysSince = getDaysSinceLastReferral(partner.last_referral_at);
+                return (
+                  <Link
+                    key={partner.id}
+                    to={`/partners/${partner.id}`}
+                    className="flex items-center justify-between p-3 rounded-xl bg-background/50 hover:bg-background/70 transition-smooth"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-yellow-500" />
+                      <span className="font-medium text-sm truncate">{partner.name}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {daysSince === Infinity ? "Never" : `${daysSince}d`}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-muted-foreground">
+              <TrendingUp className="w-6 h-6 mx-auto mb-1 opacity-50" />
+              <p className="text-xs">All partners active!</p>
+            </div>
+          )}
+        </div>
+
+        {/* Partner Wins */}
+        <div className="glass rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-green-500" />
+              </div>
+              <div>
+                <h3 className="font-bold">Partner Wins</h3>
+                <p className="text-xs text-muted-foreground">Top performers</p>
+              </div>
+            </div>
+            <Link to="/partners">
+              <Button variant="ghost" size="sm" className="rounded-xl h-8 w-8 p-0">
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {partnersLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-12 rounded-xl" />
+              <Skeleton className="h-12 rounded-xl" />
+            </div>
+          ) : partnerWins.length > 0 ? (
+            <div className="space-y-2">
+              {partnerWins.map((partner, index) => (
+                <Link
+                  key={partner.id}
+                  to={`/partners/${partner.id}`}
+                  className="flex items-center justify-between p-3 rounded-xl bg-background/50 hover:bg-background/70 transition-smooth"
+                >
+                  <div className="flex items-center gap-2">
+                    <Trophy className={`w-4 h-4 ${
+                      index === 0 ? "text-yellow-500" : index === 1 ? "text-gray-400" : "text-amber-600"
+                    }`} />
+                    <span className="font-medium text-sm truncate">{partner.name}</span>
+                  </div>
+                  <span className="text-xs font-bold text-green-500">
+                    +{partner.referrals_this_month || 0}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-muted-foreground">
+              <Trophy className="w-6 h-6 mx-auto mb-1 opacity-50" />
+              <p className="text-xs">No referrals this month</p>
+            </div>
+          )}
+        </div>
+
+        {/* Recent Activity Feed */}
+        <div className="glass rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Activity className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold">Activity Feed</h3>
+                <p className="text-xs text-muted-foreground">Recent referrals</p>
+              </div>
+            </div>
+            <Link to="/partners">
+              <Button variant="ghost" size="sm" className="rounded-xl h-8 w-8 p-0">
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {referralsLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-12 rounded-xl" />
+              <Skeleton className="h-12 rounded-xl" />
+              <Skeleton className="h-12 rounded-xl" />
+            </div>
+          ) : recentReferrals.length > 0 ? (
+            <div className="space-y-2">
+              {recentReferrals.map((referral) => (
+                <div
+                  key={referral.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-background/50"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{referral.partner_name || "Partner"}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {referral.user_email || "New signup"}
+                    </p>
+                  </div>
+                  <div className="text-right ml-2">
+                    <p className="text-xs font-bold text-green-500">
+                      {formatCurrency(referral.commission_amount)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(parseISO(referral.referral_date), "MMM d")}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-muted-foreground">
+              <Activity className="w-6 h-6 mx-auto mb-1 opacity-50" />
+              <p className="text-xs">No recent activity</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Quick Actions */}

@@ -21,6 +21,10 @@ export interface Partner {
   counterparty_id?: string;
   notes?: string;
   created_at: string;
+  // Monitoring fields
+  referrals_this_month?: number;
+  last_referral_at?: string;
+  confirmed_referrals?: number;
 }
 
 export interface CreatePartnerInput {
