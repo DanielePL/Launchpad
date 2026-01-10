@@ -65,6 +65,22 @@ class AsanaClient {
     return response.data;
   }
 
+  // Get all projects in workspace
+  async getWorkspaceProjects(workspaceGid: string): Promise<{ gid: string; name: string }[]> {
+    const response = await this.request<AsanaResponse<{ gid: string; name: string }[]>>(
+      `/workspaces/${workspaceGid}/projects?opt_fields=name&limit=100`
+    );
+    return response.data;
+  }
+
+  // Get all tasks from a project
+  async getProjectTasks(projectGid: string): Promise<AsanaTask[]> {
+    const response = await this.request<AsanaResponse<AsanaTask[]>>(
+      `/projects/${projectGid}/tasks?opt_fields=name,completed,completed_at,due_on,due_at,created_at,assignee,assignee.name,assignee.gid,projects.name&limit=100`
+    );
+    return response.data;
+  }
+
   // Search tasks in workspace using the Search API
   async searchTasks(
     workspaceGid: string,
@@ -77,6 +93,7 @@ class AsanaClient {
   ): Promise<AsanaTask[]> {
     const params = new URLSearchParams({
       opt_fields: "name,completed,completed_at,completed_by,due_on,due_at,created_at,modified_at,projects.name,tags.name,assignee,assignee.name,assignee.gid",
+      limit: "100",
     });
 
     if (options.assignee) {
@@ -101,25 +118,32 @@ class AsanaClient {
     return response.data;
   }
 
-  // Get ALL tasks in workspace (for dashboard overview)
+  // Get ALL tasks in workspace (via projects - more reliable)
   async getAllWorkspaceTasks(
     workspaceGid: string,
-    options: {
+    _options: {
       completedSince?: string;
     } = {}
   ): Promise<AsanaTask[]> {
-    // Get both completed and incomplete tasks
-    const [completedTasks, incompleteTasks] = await Promise.all([
-      this.searchTasks(workspaceGid, {
-        isCompleted: true,
-        completedSince: options.completedSince,
-      }),
-      this.searchTasks(workspaceGid, {
-        isCompleted: false,
-      }),
-    ]);
+    // Get all projects first
+    const projects = await this.getWorkspaceProjects(workspaceGid);
 
-    return [...completedTasks, ...incompleteTasks];
+    // Fetch tasks from all projects in parallel
+    const taskArrays = await Promise.all(
+      projects.map((project) => this.getProjectTasks(project.gid))
+    );
+
+    // Flatten and deduplicate by task GID
+    const taskMap = new Map<string, AsanaTask>();
+    for (const tasks of taskArrays) {
+      for (const task of tasks) {
+        if (!taskMap.has(task.gid)) {
+          taskMap.set(task.gid, task);
+        }
+      }
+    }
+
+    return Array.from(taskMap.values());
   }
 
   // Get tasks grouped by assignee
