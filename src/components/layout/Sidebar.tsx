@@ -14,6 +14,7 @@ import {
   Target,
   Instagram,
   ExternalLink,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -83,6 +84,12 @@ const allNavigation: NavItem[] = [
     icon: Building2,
     href: "/employees",
     permission: "employees",
+  },
+  {
+    label: "Performance",
+    icon: Activity,
+    href: "/performance",
+    permission: "performance",
   },
   {
     label: "Users",

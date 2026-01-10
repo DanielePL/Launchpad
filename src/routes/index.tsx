@@ -25,6 +25,7 @@ import { SalesCRMPage } from "@/pages/sales/SalesCRMPage";
 import InfluencersPage from "@/pages/influencers/InfluencersPage";
 import InfluencerManagerLogin from "@/pages/influencers/InfluencerManagerLogin";
 import { AdminPermissionsPage } from "@/pages/settings/AdminPermissionsPage";
+import { PerformanceDashboard } from "@/pages/performance/PerformanceDashboard";
 
 // Partner Portal Pages
 import PartnerLogin from "@/pages/partner-portal/PartnerLogin";
@@ -75,6 +76,9 @@ export const router = createBrowserRouter([
 
       // Employees
       { path: "employees", element: <EmployeesPage /> },
+
+      // Performance
+      { path: "performance", element: <PerformanceDashboard /> },
 
       // Users
       { path: "users", element: <UsersListPage /> },

@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Super admin has all permissions, others get from storage
   const permissions: Permission[] = userIsSuperAdmin
-    ? ["dashboard", "costs", "revenue", "analytics", "partners", "employees", "users", "sales", "influencers", "settings"]
+    ? ["dashboard", "costs", "revenue", "analytics", "partners", "employees", "performance", "users", "sales", "influencers", "settings"]
     : (storedPermissions[userEmail]?.permissions || DEFAULT_PERMISSIONS);
 
   const sensitivePermissions: SensitivePermission[] = userIsSuperAdmin
@@ -139,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Super admin - always full access
       {
         email: ADMIN_EMAILS.SUPER_ADMIN,
-        permissions: ["dashboard", "costs", "revenue", "analytics", "partners", "employees", "users", "sales", "influencers", "settings"],
+        permissions: ["dashboard", "costs", "revenue", "analytics", "partners", "employees", "performance", "users", "sales", "influencers", "settings"],
         sensitive_permissions: ["compensation:view", "compensation:edit"],
         updated_at: "",
         updated_by: "",

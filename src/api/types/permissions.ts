@@ -28,6 +28,7 @@ export type Permission =
   | "partners"
   | "partners:payouts"
   | "employees"
+  | "performance"
   | "users"
   | "sales"
   | "sales:demo"
@@ -73,6 +74,7 @@ export const PERMISSION_CONFIG: PermissionConfig[] = [
   },
   { id: "partners:payouts", label: "Payouts" },
   { id: "employees", label: "Employees" },
+  { id: "performance", label: "Performance" },
   { id: "users", label: "Users" },
   {
     id: "sales",
