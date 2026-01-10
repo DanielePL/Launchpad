@@ -101,7 +101,36 @@ class AsanaClient {
     return response.data;
   }
 
-  // Get all tasks for a user (completed + incomplete)
+  // Get user's task list GID
+  async getUserTaskList(userGid: string, workspaceGid: string): Promise<string> {
+    const response = await this.request<AsanaResponse<{ gid: string }>>(
+      `/users/${userGid}/user_task_list?workspace=${workspaceGid}`
+    );
+    return response.data.gid;
+  }
+
+  // Get tasks from a user's task list
+  async getTasksFromTaskList(
+    taskListGid: string,
+    options: {
+      completedSince?: string;
+    } = {}
+  ): Promise<AsanaTask[]> {
+    const params = new URLSearchParams({
+      opt_fields: "name,completed,completed_at,completed_by,due_on,due_at,created_at,modified_at,projects.name,tags.name,assignee.name",
+    });
+
+    if (options.completedSince) {
+      params.set("completed_since", options.completedSince);
+    }
+
+    const response = await this.request<AsanaResponse<AsanaTask[]>>(
+      `/user_task_lists/${taskListGid}/tasks?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  // Get all tasks for a user (using user task list - more reliable)
   async getUserTasks(
     userGid: string,
     workspaceGid: string,
@@ -110,21 +139,30 @@ class AsanaClient {
       modifiedSince?: string;
     } = {}
   ): Promise<AsanaTask[]> {
-    // Fetch both completed and incomplete tasks
-    const [completedTasks, incompleteTasks] = await Promise.all([
-      this.searchTasks(workspaceGid, {
-        assignee: userGid,
-        isCompleted: true,
-        completedSince: options.completedSince,
-        modifiedAfter: options.modifiedSince,
-      }),
-      this.searchTasks(workspaceGid, {
-        assignee: userGid,
-        isCompleted: false,
-      }),
-    ]);
-
-    return [...completedTasks, ...incompleteTasks];
+    try {
+      // Try user task list first (most reliable)
+      const taskListGid = await this.getUserTaskList(userGid, workspaceGid);
+      const tasks = await this.getTasksFromTaskList(taskListGid, {
+        completedSince: options.completedSince || options.modifiedSince,
+      });
+      return tasks;
+    } catch (error) {
+      // Fallback to search API
+      console.warn("User task list failed, falling back to search:", error);
+      const [completedTasks, incompleteTasks] = await Promise.all([
+        this.searchTasks(workspaceGid, {
+          assignee: userGid,
+          isCompleted: true,
+          completedSince: options.completedSince,
+          modifiedAfter: options.modifiedSince,
+        }),
+        this.searchTasks(workspaceGid, {
+          assignee: userGid,
+          isCompleted: false,
+        }),
+      ]);
+      return [...completedTasks, ...incompleteTasks];
+    }
   }
 
   // Get completed tasks for a user in date range
