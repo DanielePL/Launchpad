@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prometheus Creator Partnership Agreement</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #fff;
+      padding: 0;
+    }
+
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 20mm 25mm;
+      background: #fff;
+    }
+
+    @media print {
+      .page {
+        padding: 15mm 20mm;
+        page-break-after: always;
+      }
+      .page:last-child {
+        page-break-after: avoid;
+      }
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #f97316;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo svg {
+      width: 28px;
+      height: 28px;
+      fill: white;
+    }
+
+    .header-text h1 {
+      font-size: 22pt;
+      font-weight: 700;
+      color: #1a1a1a;
+      letter-spacing: -0.5px;
+    }
+
+    .header-text p {
+      font-size: 10pt;
+      color: #666;
+    }
+
+    /* Document Info */
+    .doc-info {
+      background: #fef3e6;
+      border: 1px solid #fed7aa;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+    }
+
+    .doc-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .doc-info-item label {
+      font-size: 9pt;
+      color: #92400e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .doc-info-item span {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    /* Sections */
+    h2 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #f97316;
+      margin: 24px 0 12px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #fed7aa;
+    }
+
+    h3 {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 16px 0 8px 0;
+    }
+
+    p {
+      margin-bottom: 10px;
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin: 10px 0 10px 24px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 10pt;
+    }
+
+    th {
+      background: #f97316;
+      color: white;
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 12px;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    /* Signature Section */
+    .signature-section {
+      margin-top: 40px;
+      page-break-inside: avoid;
+    }
+
+    .signature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-top: 24px;
+    }
+
+    .signature-box {
+      border: 2px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .signature-box h4 {
+      font-size: 10pt;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .signature-line {
+      border-bottom: 1px solid #1a1a1a;
+      height: 50px;
+      margin-bottom: 8px;
+    }
+
+    .signature-label {
+      font-size: 9pt;
+      color: #666;
+    }
+
+    .signature-field {
+      margin-bottom: 16px;
+    }
+
+    /* Highlights */
+    .highlight {
+      background: #fef3e6;
+      border-left: 4px solid #f97316;
+      padding: 12px 16px;
+      margin: 16px 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .highlight strong {
+      color: #ea580c;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e5e5;
+      text-align: center;
+      font-size: 9pt;
+      color: #666;
+    }
+
+    .footer a {
+      color: #f97316;
+      text-decoration: none;
+    }
+
+    /* Placeholder styling */
+    .placeholder {
+      background: #fef9c3;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 10pt;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        <path d="M12.5 2.5c0 0-2.5 4-2.5 7s1.5 5 2.5 7c1-2 2.5-4 2.5-7s-2.5-7-2.5-7z"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Creator Partnership Agreement</h1>
+      <p>PeakForce OÜ ("Prometheus") • www.prometheus.coach</p>
+    </div>
+  </div>
+
+  <!-- Document Info -->
+  <div class="doc-info">
+    <div class="doc-info-grid">
+      <div class="doc-info-item">
+        <label>Agreement Date</label>
+        <span class="placeholder">{{CONTRACT_DATE}}</span>
+      </div>
+      <div class="doc-info-item">
+        <label>Agreement ID</label>
+        <span class="placeholder">{{CONTRACT_ID}}</span>
+      </div>
+      <div class="doc-info-item">
+        <label>Creator Name</label>
+        <span class="placeholder">{{CREATOR_NAME}}</span>
+      </div>
+      <div class="doc-info-item">
+        <label>Creator Handle</label>
+        <span class="placeholder">{{CREATOR_HANDLE}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parties -->
+  <h2>1. Parties</h2>
+  <p>This Creator Partnership Agreement ("Agreement") is entered into between:</p>
+  <p><strong>Company:</strong> PeakForce OÜ, a company registered in Estonia (Registry Code: 16768488), operating the Prometheus fitness platform ("Prometheus", "Company", "we", "us")</p>
+  <p><strong>Creator:</strong> <span class="placeholder">{{CREATOR_LEGAL_NAME}}</span>, known as <span class="placeholder">{{CREATOR_HANDLE}}</span> on social media platforms ("Creator", "Partner", "you")</p>
+
+  <!-- Definitions -->
+  <h2>2. Definitions</h2>
+  <ul>
+    <li><strong>"Referral"</strong> means any new user who signs up for Prometheus using the Creator's unique referral code or link.</li>
+    <li><strong>"Qualifying Purchase"</strong> means any paid subscription purchased by a Referral through the Prometheus app.</li>
+    <li><strong>"Net Revenue"</strong> means the gross purchase price minus applicable app store fees (typically 15-30%).</li>
+    <li><strong>"Commission"</strong> means the percentage of Net Revenue payable to Creator for Qualifying Purchases.</li>
+    <li><strong>"Content"</strong> means any promotional materials, posts, videos, or other media created by Creator mentioning Prometheus.</li>
+  </ul>
+
+  <!-- Commission Structure -->
+  <h2>3. Commission Structure</h2>
+
+  <div class="highlight">
+    <strong>Commission Rate: <span class="placeholder">{{COMMISSION_RATE}}</span>% of Net Revenue</strong><br>
+    Commissions are <strong>recurring</strong> for as long as your Referrals maintain their paid subscriptions.
+  </div>
+
+  <h3>3.1 Commission Calculation</h3>
+  <p>Your commission is calculated as follows:</p>
+  <p style="text-align: center; font-family: monospace; background: #f5f5f5; padding: 12px; border-radius: 6px;">
+    Commission = Gross Price × 0.70 (after App Store) × <span class="placeholder">{{COMMISSION_RATE}}</span>%
+  </p>
+
+  <h3>3.2 Commission Table</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Subscription</th>
+        <th>Price</th>
+        <th>Net (after 30% store fee)</th>
+        <th>Your Commission ({{COMMISSION_RATE}}%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Weekly Premium</td>
+        <td>$1.99</td>
+        <td>$1.39</td>
+        <td>$0.28</td>
+      </tr>
+      <tr>
+        <td>Weekly Elite</td>
+        <td>$2.99</td>
+        <td>$2.09</td>
+        <td>$0.42</td>
+      </tr>
+      <tr>
+        <td>Monthly Premium</td>
+        <td>$5.99</td>
+        <td>$4.19</td>
+        <td>$0.84</td>
+      </tr>
+      <tr>
+        <td>Monthly Elite</td>
+        <td>$9.99</td>
+        <td>$6.99</td>
+        <td>$1.40</td>
+      </tr>
+      <tr>
+        <td>Yearly Premium</td>
+        <td>$59.00</td>
+        <td>$41.30</td>
+        <td>$8.26</td>
+      </tr>
+      <tr>
+        <td>Yearly Elite</td>
+        <td>$99.00</td>
+        <td>$69.30</td>
+        <td>$13.86</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>3.3 Payment Terms</h3>
+  <ul>
+    <li><strong>Minimum Payout:</strong> $50 USD (balances below this threshold roll over to the next period)</li>
+    <li><strong>Payment Schedule:</strong> Monthly, within 15 days after month end</li>
+    <li><strong>Payment Methods:</strong> Bank transfer (SEPA/SWIFT) or Revolut</li>
+    <li><strong>Currency:</strong> USD (converted at payment date exchange rate)</li>
+  </ul>
+
+  <!-- Creator Obligations -->
+  <h2>4. Creator Obligations</h2>
+
+  <h3>4.1 Content Requirements</h3>
+  <p>Creator agrees to:</p>
+  <ul>
+    <li>Create authentic, honest content about Prometheus</li>
+    <li>Clearly disclose the partnership relationship in accordance with FTC guidelines and local regulations (e.g., #ad, #sponsored, #partner)</li>
+    <li>Not make false, misleading, or unsubstantiated claims about the app or its features</li>
+    <li>Not engage in any deceptive practices to generate referrals (fake accounts, bots, incentivized installs)</li>
+  </ul>
+
+  <h3>4.2 Brand Guidelines</h3>
+  <p>Creator agrees to:</p>
+  <ul>
+    <li>Use Prometheus branding assets only as provided and approved by Prometheus</li>
+    <li>Not modify, distort, or alter the Prometheus logo or brand elements</li>
+    <li>Maintain a professional image consistent with Prometheus brand values</li>
+    <li>Submit major promotional campaigns for approval before publication (optional but recommended)</li>
+  </ul>
+
+  <h3>4.3 Prohibited Activities</h3>
+  <p>Creator shall NOT:</p>
+  <ul>
+    <li>Use paid advertising that directly competes with Prometheus's own advertising</li>
+    <li>Bid on Prometheus brand terms in search advertising without written permission</li>
+    <li>Send unsolicited bulk messages or spam</li>
+    <li>Create content that is offensive, discriminatory, or harmful</li>
+    <li>Misrepresent the relationship with Prometheus (e.g., claiming to be an employee)</li>
+  </ul>
+
+</div>
+
+<div class="page">
+
+  <!-- Company Obligations -->
+  <h2>5. Company Obligations</h2>
+  <p>Prometheus agrees to:</p>
+  <ul>
+    <li>Provide Creator with a unique referral code and tracking link</li>
+    <li>Accurately track and report all Referrals and Qualifying Purchases</li>
+    <li>Pay commissions in accordance with Section 3</li>
+    <li>Provide access to a Creator Portal for real-time statistics and earnings</li>
+    <li>Notify Creator of any material changes to the app, pricing, or commission structure with at least 30 days notice</li>
+    <li>Provide marketing materials and brand assets upon request</li>
+  </ul>
+
+  <!-- Intellectual Property -->
+  <h2>6. Intellectual Property</h2>
+
+  <h3>6.1 Prometheus IP</h3>
+  <p>All Prometheus trademarks, logos, and brand materials remain the exclusive property of PeakForce OÜ. Creator is granted a limited, non-exclusive, revocable license to use these materials solely for promoting Prometheus under this Agreement.</p>
+
+  <h3>6.2 Creator Content</h3>
+  <p>Creator retains ownership of all original Content created. Creator grants Prometheus a non-exclusive, royalty-free, worldwide license to use, reproduce, and display Creator's Content for marketing and promotional purposes, with appropriate attribution.</p>
+
+  <h3>6.3 Custom Programs</h3>
+  <p>If Creator provides workout programs or content for inclusion in the Prometheus app:</p>
+  <ul>
+    <li>Creator retains ownership of the underlying intellectual property</li>
+    <li>Creator grants Prometheus a license to distribute within the app during the term of this Agreement</li>
+    <li>Programs will be clearly attributed to Creator</li>
+    <li>Upon termination, Prometheus will remove Creator's programs within 30 days unless otherwise agreed</li>
+  </ul>
+
+  <!-- Term and Termination -->
+  <h2>7. Term and Termination</h2>
+
+  <h3>7.1 Term</h3>
+  <p>This Agreement begins on the date of signature and continues for an initial term of <strong>12 months</strong>, automatically renewing for successive 12-month periods unless terminated.</p>
+
+  <h3>7.2 Termination Without Cause</h3>
+  <p>Either party may terminate this Agreement at any time with <strong>30 days written notice</strong> to the other party.</p>
+
+  <h3>7.3 Termination for Cause</h3>
+  <p>Either party may terminate immediately if the other party:</p>
+  <ul>
+    <li>Materially breaches this Agreement and fails to cure within 14 days of notice</li>
+    <li>Engages in fraud, illegal activity, or conduct harmful to the other party's reputation</li>
+    <li>Becomes insolvent or files for bankruptcy</li>
+  </ul>
+
+  <h3>7.4 Effect of Termination</h3>
+  <p>Upon termination:</p>
+  <ul>
+    <li>Creator's referral code will be deactivated</li>
+    <li>Creator will receive final payment for all earned commissions within 45 days</li>
+    <li>Creator must cease using Prometheus branding and materials</li>
+    <li>Sections 6 (IP), 8 (Confidentiality), and 9 (Limitation of Liability) survive termination</li>
+  </ul>
+
+  <!-- Confidentiality -->
+  <h2>8. Confidentiality</h2>
+  <p>Both parties agree to keep confidential any non-public information disclosed during this partnership, including but not limited to:</p>
+  <ul>
+    <li>Commission rates and payment terms</li>
+    <li>Business strategies and unreleased features</li>
+    <li>User data and analytics</li>
+    <li>Financial information</li>
+  </ul>
+  <p>This obligation survives termination for a period of 2 years.</p>
+
+  <!-- Limitation of Liability -->
+  <h2>9. Limitation of Liability</h2>
+  <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW:</p>
+  <ul>
+    <li>Neither party shall be liable for any indirect, incidental, special, consequential, or punitive damages</li>
+    <li>Prometheus's total liability under this Agreement shall not exceed the total commissions paid to Creator in the 12 months preceding the claim</li>
+    <li>Creator acknowledges that commission earnings depend on factors outside Prometheus's control and are not guaranteed</li>
+  </ul>
+
+  <!-- Miscellaneous -->
+  <h2>10. General Provisions</h2>
+
+  <h3>10.1 Independent Contractor</h3>
+  <p>Creator is an independent contractor, not an employee, agent, or partner of Prometheus. Creator is responsible for their own taxes and business expenses.</p>
+
+  <h3>10.2 Assignment</h3>
+  <p>Creator may not assign this Agreement without Prometheus's written consent. Prometheus may assign this Agreement in connection with a merger or acquisition.</p>
+
+  <h3>10.3 Modifications</h3>
+  <p>This Agreement may only be modified in writing signed by both parties, or by Prometheus with 30 days notice for non-material changes.</p>
+
+  <h3>10.4 Governing Law</h3>
+  <p>This Agreement is governed by the laws of Estonia. Any disputes shall be resolved through arbitration in Tallinn, Estonia, or by mutual agreement in another jurisdiction.</p>
+
+  <h3>10.5 Entire Agreement</h3>
+  <p>This Agreement constitutes the entire agreement between the parties and supersedes all prior negotiations and agreements.</p>
+
+  <!-- Signatures -->
+  <div class="signature-section">
+    <h2>11. Signatures</h2>
+    <p>By signing below, both parties agree to be bound by the terms of this Agreement.</p>
+
+    <div class="signature-grid">
+      <div class="signature-box">
+        <h4>For Prometheus (PeakForce OÜ)</h4>
+        <div class="signature-field">
+          <div class="signature-line"></div>
+          <div class="signature-label">Signature</div>
+        </div>
+        <div class="signature-field">
+          <div class="signature-line" style="height: 24px;"></div>
+          <div class="signature-label">Name: Daniele Pauli, CEO</div>
+        </div>
+        <div class="signature-field">
+          <div class="signature-line" style="height: 24px;"></div>
+          <div class="signature-label">Date</div>
+        </div>
+      </div>
+
+      <div class="signature-box">
+        <h4>For Creator</h4>
+        <div class="signature-field">
+          <div class="signature-line"></div>
+          <div class="signature-label">Signature</div>
+        </div>
+        <div class="signature-field">
+          <div class="signature-line" style="height: 24px;"></div>
+          <div class="signature-label">Name: <span class="placeholder">{{CREATOR_LEGAL_NAME}}</span></div>
+        </div>
+        <div class="signature-field">
+          <div class="signature-line" style="height: 24px;"></div>
+          <div class="signature-label">Date</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p><strong>PeakForce OÜ</strong> • Registry Code: 16768488 • Tallinn, Estonia</p>
+    <p><a href="https://www.prometheus.coach">www.prometheus.coach</a> • creators@prometheus.coach</p>
+    <p style="margin-top: 8px; font-size: 8pt;">Agreement Version 1.0 • Last Updated: January 2025</p>
+  </div>
+
+</div>
+
+</body>
+</html>
