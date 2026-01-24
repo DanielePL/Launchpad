@@ -2,19 +2,46 @@ import { adminApi } from "../client";
 import type {
   Partner,
   CreatePartnerInput,
+  ApprovePartnerInput,
   PartnerReferral,
   PendingPayout,
+  CreatorType,
 } from "../types/partners";
 
 // Helper to normalize partner ID field (API returns partner_id from view, id from table)
+// Also ensures creator_type defaults to "partner" for backwards compatibility
 const normalizePartner = (partner: Partner & { partner_id?: string }): Partner => ({
   ...partner,
   id: partner.id || partner.partner_id || "",
+  creator_type: partner.creator_type || "partner",
 });
 
+export interface GetPartnersOptions {
+  creator_type?: CreatorType;
+  status?: string;
+}
+
 export const partnersApi = {
-  getAll: async (): Promise<Partner[]> => {
-    const response = await adminApi.get("/partners");
+  getAll: async (options?: GetPartnersOptions): Promise<Partner[]> => {
+    const response = await adminApi.get("/partners", {
+      params: options,
+    });
+    return (response.data || []).map(normalizePartner);
+  },
+
+  // Get only partners (creator_type = "partner")
+  getPartners: async (): Promise<Partner[]> => {
+    const response = await adminApi.get("/partners", {
+      params: { creator_type: "partner" },
+    });
+    return (response.data || []).map(normalizePartner);
+  },
+
+  // Get only influencers (creator_type = "influencer")
+  getInfluencers: async (): Promise<Partner[]> => {
+    const response = await adminApi.get("/partners", {
+      params: { creator_type: "influencer" },
+    });
     return (response.data || []).map(normalizePartner);
   },
 
@@ -106,5 +133,19 @@ export const partnersApi = {
   }> => {
     const response = await adminApi.post("/confirm-pending-commissions");
     return response.data;
+  },
+
+  approvePartner: async (
+    data: ApprovePartnerInput
+  ): Promise<{ success: boolean; partner: Partner }> => {
+    const response = await adminApi.post("/partners/approve", data);
+    return response.data;
+  },
+
+  getPendingApprovals: async (): Promise<Partner[]> => {
+    const response = await adminApi.get("/partners", {
+      params: { status: "pending_approval" },
+    });
+    return (response.data || []).map(normalizePartner);
   },
 };

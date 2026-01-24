@@ -1,3 +1,11 @@
+import type { InfluencerCategory, TeamMember } from "./influencers";
+
+// Creator type distinguishes between partners and influencers in the unified system
+export type CreatorType = "partner" | "influencer";
+
+// Contract status for creators
+export type ContractStatus = "pending" | "signed" | "expired";
+
 export interface Partner {
   id: string;
   partner_id?: string; // From partner_statistics view, normalized to id
@@ -15,7 +23,8 @@ export interface Partner {
     bic?: string;
     bank_country?: string;
   };
-  status: "active" | "inactive" | "terminated";
+  status: "pending_approval" | "active" | "inactive" | "terminated";
+  created_by?: string; // Email of who created the partner
   total_referrals: number;
   total_earned: number;
   total_paid: number;
@@ -26,6 +35,21 @@ export interface Partner {
   referrals_this_month?: number;
   last_referral_at?: string;
   confirmed_referrals?: number;
+
+  // Creator type (partner or influencer)
+  creator_type: CreatorType;
+
+  // Influencer-specific fields (optional, only for creator_type="influencer")
+  tiktok_handle?: string;
+  youtube_handle?: string;
+  engagement_rate?: number;
+  category?: InfluencerCategory;
+  contact_person?: TeamMember;
+
+  // Contract management
+  contract_id?: string;
+  contract_signed_at?: string;
+  contract_status?: ContractStatus;
 }
 
 export interface CreatePartnerInput {
@@ -38,6 +62,24 @@ export interface CreatePartnerInput {
   follower_count?: number;
   payout_method?: string;
   notes?: string;
+  status?: "pending_approval" | "active";
+  created_by?: string;
+
+  // Creator type (defaults to "partner" if not specified)
+  creator_type?: CreatorType;
+
+  // Influencer-specific fields
+  tiktok_handle?: string;
+  youtube_handle?: string;
+  engagement_rate?: number;
+  category?: InfluencerCategory;
+  contact_person?: TeamMember;
+}
+
+export interface ApprovePartnerInput {
+  partner_id: string;
+  approved: boolean;
+  rejection_reason?: string;
 }
 
 export interface PartnerReferral {

@@ -31,6 +31,7 @@ import { AdminPermissionsPage } from "@/pages/settings/AdminPermissionsPage";
 import { PerformanceDashboard } from "@/pages/performance/PerformanceDashboard";
 import { BetaManagementPage } from "@/pages/beta/BetaManagementPage";
 import { CrashesPage } from "@/pages/crashes/CrashesPage";
+import { ContractsPage } from "@/pages/contracts/ContractsPage";
 
 // Partner Portal Pages
 import PartnerLogin from "@/pages/partner-portal/PartnerLogin";
@@ -81,10 +82,11 @@ export const router = createBrowserRouter([
       { path: "analytics/break-even", element: <BreakEvenPage /> },
       { path: "analytics/trends", element: <DashboardPage /> },
 
-      // Partners
+      // Partners / Creators
       { path: "partners", element: <PartnersListPage /> },
       { path: "partners/:id", element: <PartnerDetailPage /> },
       { path: "payouts", element: <PayoutsPage /> },
+      { path: "contracts", element: <ContractsPage /> },
 
       // Employees (Super Admin only)
       {

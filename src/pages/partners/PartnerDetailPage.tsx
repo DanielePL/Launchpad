@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -12,16 +12,31 @@ import {
   AlertCircle,
   ExternalLink,
   Wallet,
+  Check,
+  X,
+  UserCheck,
+  Video,
+  FileText,
+  Upload,
+  Percent,
+  Tag,
+  UserCircle,
 } from "lucide-react";
 import {
   usePartners,
   usePartnerReferrals,
   useSendRevolutPayout,
   useCreateRevolutCounterparty,
+  useApprovePartner,
 } from "@/hooks/usePartners";
+import { useCreatorContracts, useCreateContract, useUploadContractPdf, useSendContractForSignature } from "@/hooks/useContracts";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ContractViewer, ContractPreview } from "@/components/contracts/ContractViewer";
 import { format, parseISO } from "date-fns";
+import { cn } from "@/lib/utils";
+import { CATEGORY_LABELS } from "@/api/types/influencers";
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -45,12 +60,34 @@ const statusConfig = {
 
 export function PartnerDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { isSuperAdmin } = useAuth();
   const { data: partners, isLoading: partnersLoading } = usePartners();
   const { data: referrals, isLoading: referralsLoading } = usePartnerReferrals(id);
+  const { data: contracts, isLoading: contractsLoading } = useCreatorContracts(id || "");
   const sendPayoutMutation = useSendRevolutPayout();
   const createCounterpartyMutation = useCreateRevolutCounterparty();
+  const approvePartnerMutation = useApprovePartner();
+  const createContractMutation = useCreateContract();
+  const uploadPdfMutation = useUploadContractPdf();
+  const sendForSignatureMutation = useSendContractForSignature();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showContractViewer, setShowContractViewer] = useState(false);
 
   const partner = useMemo(() => partners?.find((p) => p.id === id), [partners, id]);
+  const latestContract = contracts?.[0];
+  const isInfluencer = partner?.creator_type === "influencer";
+
+  const handleApprovePartner = async (approved: boolean) => {
+    if (!partner) return;
+    const action = approved ? "approve" : "reject";
+    if (confirm(`Are you sure you want to ${action} ${partner.name}?`)) {
+      await approvePartnerMutation.mutateAsync({
+        partner_id: partner.id,
+        approved,
+      });
+    }
+  };
 
   const isLoading = partnersLoading || referralsLoading;
 
@@ -127,10 +164,63 @@ export function PartnerDetailPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl lg:text-4xl font-bold">{partner.name}</h1>
-          <p className="text-muted-foreground">Partner Details</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl lg:text-4xl font-bold">{partner.name}</h1>
+            <span
+              className={cn(
+                "px-3 py-1 rounded-full text-sm font-medium",
+                isInfluencer
+                  ? "bg-purple-500/20 text-purple-500"
+                  : "bg-blue-500/20 text-blue-500"
+              )}
+            >
+              {isInfluencer ? "Influencer" : "Partner"}
+            </span>
+          </div>
+          <p className="text-muted-foreground">{isInfluencer ? "Influencer" : "Partner"} Details</p>
         </div>
       </div>
+
+      {/* Pending Approval Banner - Super Admin Only */}
+      {isSuperAdmin && partner.status === "pending_approval" && (
+        <div className="glass rounded-2xl p-6 border-2 border-orange-500/30 bg-orange-500/5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-orange-500/20 text-orange-500 flex items-center justify-center">
+                <UserCheck className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold">Approval Required</h2>
+                <p className="text-sm text-muted-foreground">
+                  This partner is waiting for your approval before their referral code becomes active.
+                  {partner.created_by && (
+                    <span className="block mt-1">Created by: {partner.created_by}</span>
+                  )}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => handleApprovePartner(false)}
+                disabled={approvePartnerMutation.isPending}
+              >
+                <X className="w-4 h-4 mr-1" />
+                Reject
+              </Button>
+              <Button
+                className="rounded-xl glow-orange"
+                onClick={() => handleApprovePartner(true)}
+                disabled={approvePartnerMutation.isPending}
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Approve Partner
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Partner Info Card */}
       <div className="glass rounded-2xl p-6">
@@ -146,12 +236,14 @@ export function PartnerDetailPage() {
                   className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     partner.status === "active"
                       ? "bg-green-500/20 text-green-500"
+                      : partner.status === "pending_approval"
+                      ? "bg-orange-500/20 text-orange-500"
                       : partner.status === "inactive"
                       ? "bg-yellow-500/20 text-yellow-500"
                       : "bg-destructive/20 text-destructive"
                   }`}
                 >
-                  {partner.status}
+                  {partner.status === "pending_approval" ? "Pending Approval" : partner.status}
                 </span>
                 <span className="text-sm text-muted-foreground capitalize">{partner.partner_type}</span>
               </div>
@@ -218,6 +310,203 @@ export function PartnerDetailPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Influencer-specific Info */}
+      {isInfluencer && (
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <Video className="w-6 h-6 text-purple-500" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">Influencer Details</h2>
+              <p className="text-sm text-muted-foreground">Social media & engagement info</p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {partner.tiktok_handle && (
+              <div className="p-4 rounded-xl bg-background/50">
+                <p className="text-sm text-muted-foreground mb-1">TikTok</p>
+                <a
+                  href={`https://tiktok.com/@${partner.tiktok_handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium hover:text-primary flex items-center gap-1"
+                >
+                  @{partner.tiktok_handle}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            )}
+            {partner.youtube_handle && (
+              <div className="p-4 rounded-xl bg-background/50">
+                <p className="text-sm text-muted-foreground mb-1">YouTube</p>
+                <a
+                  href={`https://youtube.com/@${partner.youtube_handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium hover:text-primary flex items-center gap-1"
+                >
+                  @{partner.youtube_handle}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            )}
+            {partner.engagement_rate && (
+              <div className="p-4 rounded-xl bg-background/50">
+                <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
+                  <Percent className="w-3 h-3" />
+                  Engagement Rate
+                </p>
+                <p className="font-bold text-lg">{partner.engagement_rate}%</p>
+              </div>
+            )}
+            {partner.category && (
+              <div className="p-4 rounded-xl bg-background/50">
+                <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
+                  <Tag className="w-3 h-3" />
+                  Category
+                </p>
+                <p className="font-medium capitalize">
+                  {CATEGORY_LABELS[partner.category] || partner.category}
+                </p>
+              </div>
+            )}
+            {partner.contact_person && (
+              <div className="p-4 rounded-xl bg-background/50">
+                <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
+                  <UserCircle className="w-3 h-3" />
+                  Contact Person
+                </p>
+                <p className="font-medium">{partner.contact_person}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Contract Management */}
+      <div className="glass rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+              <FileText className="w-6 h-6 text-blue-500" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">Contract</h2>
+              <p className="text-sm text-muted-foreground">
+                {latestContract
+                  ? latestContract.status === "signed"
+                    ? "Signed on " + (latestContract.signed_at ? format(parseISO(latestContract.signed_at), "MMM d, yyyy") : "N/A")
+                    : latestContract.status === "pending_signature"
+                    ? "Awaiting signature"
+                    : latestContract.status
+                  : "No contract uploaded"}
+              </p>
+            </div>
+          </div>
+
+          {latestContract?.status === "signed" ? (
+            <span className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-500/20 text-green-500 text-sm font-medium">
+              <CheckCircle className="w-4 h-4" />
+              Signed
+            </span>
+          ) : latestContract?.status === "pending_signature" ? (
+            <span className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-yellow-500/20 text-yellow-500 text-sm font-medium">
+              <Clock className="w-4 h-4" />
+              Pending
+            </span>
+          ) : null}
+        </div>
+
+        {latestContract?.pdf_url || latestContract?.signed_pdf_url ? (
+          <div className="space-y-4">
+            <ContractPreview
+              pdfUrl={latestContract.signed_pdf_url || latestContract.pdf_url}
+              className="mb-4"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => setShowContractViewer(true)}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                View Full Contract
+              </Button>
+              {latestContract.status === "draft" && (
+                <Button
+                  className="rounded-xl"
+                  onClick={() => sendForSignatureMutation.mutate(latestContract.id)}
+                  disabled={sendForSignatureMutation.isPending}
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  {sendForSignatureMutation.isPending ? "Sending..." : "Send for Signature"}
+                </Button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <FileText className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+            <p className="text-muted-foreground mb-4">No contract has been uploaded yet</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file && id) {
+                  try {
+                    const { contract } = await createContractMutation.mutateAsync({ creator_id: id });
+                    await uploadPdfMutation.mutateAsync({ contractId: contract.id, file });
+                  } catch (error) {
+                    console.error("Failed to upload contract:", error);
+                  }
+                }
+              }}
+            />
+            <Button
+              className="rounded-xl"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={createContractMutation.isPending || uploadPdfMutation.isPending}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {createContractMutation.isPending || uploadPdfMutation.isPending
+                ? "Uploading..."
+                : "Upload Contract PDF"}
+            </Button>
+          </div>
+        )}
+
+        {/* Full Contract Viewer Modal */}
+        {showContractViewer && latestContract && (
+          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b">
+                <h3 className="font-bold">Contract - {partner.name}</h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-xl"
+                  onClick={() => setShowContractViewer(false)}
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="p-4">
+                <ContractViewer
+                  pdfUrl={latestContract.signed_pdf_url || latestContract.pdf_url}
+                  title={`Contract - ${partner.name}`}
+                  height="70vh"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Payout Actions */}

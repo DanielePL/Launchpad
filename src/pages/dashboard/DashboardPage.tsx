@@ -18,10 +18,16 @@ import {
   AlertTriangle,
   Clock,
   Activity,
+  UserCheck,
+  Check,
+  X,
+  Instagram,
+  ExternalLink,
 } from "lucide-react";
 import { useComprehensiveSummary, useServiceCosts } from "@/hooks/useCosts";
 import { useBreakEven } from "@/hooks/useRevenue";
-import { usePartners, usePendingPayouts, usePartnerReferrals } from "@/hooks/usePartners";
+import { usePartners, usePendingPayouts, usePartnerReferrals, useApprovePartner } from "@/hooks/usePartners";
+import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,6 +61,7 @@ function formatPercent(value: number): string {
 }
 
 export function DashboardPage() {
+  const { isSuperAdmin } = useAuth();
   const { data: comprehensive, isLoading: comprehensiveLoading } = useComprehensiveSummary();
   const { data: serviceCosts, isLoading: serviceLoading } = useServiceCosts();
   const { data: breakEven, isLoading: breakEvenLoading } = useBreakEven();
@@ -62,8 +69,19 @@ export function DashboardPage() {
   const { data: pendingPayouts, isLoading: payoutsLoading } = usePendingPayouts();
   const { data: dailyCosts, isLoading: dailyLoading } = useDailyCosts(14);
   const { data: referrals, isLoading: referralsLoading } = usePartnerReferrals();
+  const approvePartnerMutation = useApprovePartner();
 
   const isLoading = comprehensiveLoading || serviceLoading || breakEvenLoading;
+
+  // Pending partner approvals (only for super admin)
+  const pendingApprovals = partners?.filter(p => p.status === "pending_approval") || [];
+
+  const handleApprovePartner = async (partnerId: string, approved: boolean) => {
+    await approvePartnerMutation.mutateAsync({
+      partner_id: partnerId,
+      approved,
+    });
+  };
 
   // Calculate break-even progress
   const breakEvenProgress = comprehensive
@@ -206,6 +224,98 @@ export function DashboardPage() {
           </div>
         </Link>
       </div>
+
+      {/* Pending Partner Approvals - Super Admin Only */}
+      {isSuperAdmin && pendingApprovals.length > 0 && (
+        <div className="glass rounded-2xl p-6 border-2 border-orange-500/30 bg-orange-500/5">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-orange-500/20 text-orange-500 flex items-center justify-center">
+              <UserCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">Partner Approvals Required</h2>
+              <p className="text-sm text-muted-foreground">
+                {pendingApprovals.length} partner{pendingApprovals.length !== 1 ? "s" : ""} waiting for your approval
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {pendingApprovals.map((partner) => (
+              <div
+                key={partner.id}
+                className="flex items-center justify-between p-4 rounded-xl bg-background/50 border border-white/10"
+              >
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
+                    <UserPlus className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold">{partner.name}</p>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500/20 text-orange-500">
+                        Pending
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                      <span>{partner.email}</span>
+                      {partner.instagram_handle && (
+                        <a
+                          href={`https://instagram.com/${partner.instagram_handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 hover:text-primary transition-colors"
+                        >
+                          <Instagram className="w-3.5 h-3.5" />
+                          @{partner.instagram_handle}
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                      <span className="text-xs">
+                        Code: <code className="px-1 py-0.5 bg-background rounded">{partner.referral_code}</code>
+                      </span>
+                      <span className="text-xs">{partner.commission_percent}% commission</span>
+                    </div>
+                    {partner.created_by && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Created by: {partner.created_by}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 ml-4">
+                  <Link to={`/partners/${partner.id}`}>
+                    <Button variant="outline" size="sm" className="rounded-xl">
+                      <ExternalLink className="w-4 h-4 mr-1" />
+                      View
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => handleApprovePartner(partner.id, false)}
+                    disabled={approvePartnerMutation.isPending}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Reject
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="rounded-xl glow-orange"
+                    onClick={() => handleApprovePartner(partner.id, true)}
+                    disabled={approvePartnerMutation.isPending}
+                  >
+                    <Check className="w-4 h-4 mr-1" />
+                    Approve
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Profit/Loss Banner */}
       {!isLoading && comprehensive && (

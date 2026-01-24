@@ -1,21 +1,40 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { partnersApi } from "@/api/endpoints/partners";
-import type { CreatePartnerInput } from "@/api/types/partners";
+import type { CreatePartnerInput, ApprovePartnerInput, CreatorType } from "@/api/types/partners";
 
 // Query Keys
 export const partnerKeys = {
   all: ["partners"] as const,
-  list: () => [...partnerKeys.all, "list"] as const,
+  list: (creatorType?: CreatorType) => [...partnerKeys.all, "list", creatorType] as const,
   detail: (id: string) => [...partnerKeys.all, "detail", id] as const,
   referrals: (partnerId?: string) => [...partnerKeys.all, "referrals", partnerId] as const,
   pendingPayouts: () => [...partnerKeys.all, "pending-payouts"] as const,
+  pendingApprovals: () => [...partnerKeys.all, "pending-approvals"] as const,
+  partners: () => [...partnerKeys.all, "partners"] as const,
+  influencers: () => [...partnerKeys.all, "influencers"] as const,
 };
 
-// Get all partners
-export function usePartners() {
+// Get all creators (partners + influencers)
+export function usePartners(creatorType?: CreatorType) {
   return useQuery({
-    queryKey: partnerKeys.list(),
-    queryFn: partnersApi.getAll,
+    queryKey: partnerKeys.list(creatorType),
+    queryFn: () => partnersApi.getAll(creatorType ? { creator_type: creatorType } : undefined),
+  });
+}
+
+// Get only partners (convenience hook)
+export function usePartnersOnly() {
+  return useQuery({
+    queryKey: partnerKeys.partners(),
+    queryFn: partnersApi.getPartners,
+  });
+}
+
+// Get only influencers (convenience hook)
+export function useInfluencers() {
+  return useQuery({
+    queryKey: partnerKeys.influencers(),
+    queryFn: partnersApi.getInfluencers,
   });
 }
 
@@ -127,6 +146,26 @@ export function useConfirmPendingCommissions() {
 
   return useMutation({
     mutationFn: () => partnersApi.confirmPendingCommissions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: partnerKeys.all });
+    },
+  });
+}
+
+// Get pending partner approvals
+export function usePendingApprovals() {
+  return useQuery({
+    queryKey: partnerKeys.pendingApprovals(),
+    queryFn: partnersApi.getPendingApprovals,
+  });
+}
+
+// Approve or reject partner
+export function useApprovePartner() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ApprovePartnerInput) => partnersApi.approvePartner(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: partnerKeys.all });
     },
