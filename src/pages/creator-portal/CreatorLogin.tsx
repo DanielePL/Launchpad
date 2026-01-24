@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePartnerLogin } from "@/hooks/usePartnerPortal";
 
-export default function PartnerLogin() {
+export default function CreatorLogin() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -25,7 +25,7 @@ export default function PartnerLogin() {
       { email, code },
       {
         onSuccess: () => {
-          navigate("/partner");
+          navigate("/creator");
         },
         onError: () => {
           setError("Invalid email or referral code. Please try again.");
@@ -47,7 +47,7 @@ export default function PartnerLogin() {
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary glow-orange mb-4">
               <Flame className="h-8 w-8 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold">Partner Portal</h1>
+            <h1 className="text-2xl font-bold">Creator Portal</h1>
             <p className="text-muted-foreground text-center mt-2">
               Sign in to access your dashboard
             </p>
@@ -69,7 +69,7 @@ export default function PartnerLogin() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="partner@example.com"
+                  placeholder="creator@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
@@ -112,7 +112,7 @@ export default function PartnerLogin() {
           {/* Help Text */}
           <p className="text-center text-sm text-muted-foreground mt-6">
             Don't have access?{" "}
-            <a href="mailto:partners@prometheus.app" className="text-primary hover:underline">
+            <a href="mailto:creators@prometheus.app" className="text-primary hover:underline">
               Contact us
             </a>
           </p>
@@ -120,7 +120,7 @@ export default function PartnerLogin() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Prometheus Partner Program
+          Prometheus Creator Program
         </p>
       </div>
     </div>

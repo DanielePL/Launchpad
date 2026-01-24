@@ -1,12 +1,10 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { PartnerProtectedRoute } from "./PartnerProtectedRoute";
+import { CreatorProtectedRoute } from "./CreatorProtectedRoute";
 import { InfluencerManagerProtectedRoute } from "./InfluencerManagerProtectedRoute";
-import { InfluencerPortalProtectedRoute } from "./InfluencerPortalProtectedRoute";
 import { PermissionGuard } from "./RoleGuard";
-import { PartnerLayout } from "@/components/partner-portal/PartnerLayout";
-import { InfluencerLayout } from "@/components/influencer-portal/InfluencerLayout";
+import { CreatorLayout } from "@/components/creator-portal/CreatorLayout";
 
 // Auth Pages
 import { LoginPage } from "@/pages/auth/LoginPage";
@@ -34,19 +32,12 @@ import { CrashesPage } from "@/pages/crashes/CrashesPage";
 import { ContractsPage } from "@/pages/contracts/ContractsPage";
 import { DealsPage } from "@/pages/deals/DealsPage";
 
-// Partner Portal Pages
-import PartnerLogin from "@/pages/partner-portal/PartnerLogin";
-import PartnerDashboard from "@/pages/partner-portal/PartnerDashboard";
-import ReferralsPage from "@/pages/partner-portal/ReferralsPage";
-import PartnerPayoutsPage from "@/pages/partner-portal/PayoutsPage";
-import PartnerSettings from "@/pages/partner-portal/PartnerSettings";
-
-// Influencer Personal Portal Pages
-import InfluencerLogin from "@/pages/influencer-portal/InfluencerLogin";
-import InfluencerDashboard from "@/pages/influencer-portal/InfluencerDashboard";
-import InfluencerCampaignsPage from "@/pages/influencer-portal/CampaignsPage";
-import InfluencerEarningsPage from "@/pages/influencer-portal/EarningsPage";
-import InfluencerSettings from "@/pages/influencer-portal/InfluencerSettings";
+// Creator Portal Pages
+import CreatorLogin from "@/pages/creator-portal/CreatorLogin";
+import CreatorDashboard from "@/pages/creator-portal/CreatorDashboard";
+import ReferralsPage from "@/pages/creator-portal/ReferralsPage";
+import CreatorPayoutsPage from "@/pages/creator-portal/PayoutsPage";
+import CreatorSettings from "@/pages/creator-portal/CreatorSettings";
 
 export const router = createBrowserRouter([
   {
@@ -83,7 +74,7 @@ export const router = createBrowserRouter([
       { path: "analytics/break-even", element: <BreakEvenPage /> },
       { path: "analytics/trends", element: <DashboardPage /> },
 
-      // Partners / Creators
+      // Creators (formerly Partners)
       { path: "partners", element: <PartnersListPage /> },
       { path: "partners/:id", element: <PartnerDetailPage /> },
       { path: "payouts", element: <PayoutsPage /> },
@@ -134,7 +125,7 @@ export const router = createBrowserRouter([
       { path: "sales/demo", element: <SalesDemoPage /> },
       { path: "sales/crm", element: <SalesCRMPage /> },
 
-      // Influencers - protected by InfluencerManagerProtectedRoute
+      // Creator Outreach (Influencer CRM) - protected by InfluencerManagerProtectedRoute
       {
         path: "influencers",
         element: (
@@ -146,51 +137,37 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // Influencer Manager Login
+  // Influencer Manager Login (for admin CRM access)
   {
     path: "/influencers/login",
     element: <InfluencerManagerLogin />,
   },
 
-  // Partner Portal Routes
+  // Creator Portal Routes
   {
-    path: "/partner/login",
-    element: <PartnerLogin />,
+    path: "/creator/login",
+    element: <CreatorLogin />,
   },
   {
-    path: "/partner",
+    path: "/creator",
     element: (
-      <PartnerProtectedRoute>
-        <PartnerLayout />
-      </PartnerProtectedRoute>
+      <CreatorProtectedRoute>
+        <CreatorLayout />
+      </CreatorProtectedRoute>
     ),
     children: [
-      { index: true, element: <PartnerDashboard /> },
+      { index: true, element: <CreatorDashboard /> },
       { path: "referrals", element: <ReferralsPage /> },
-      { path: "payouts", element: <PartnerPayoutsPage /> },
-      { path: "settings", element: <PartnerSettings /> },
+      { path: "payouts", element: <CreatorPayoutsPage /> },
+      { path: "settings", element: <CreatorSettings /> },
     ],
   },
 
-  // Influencer Personal Portal Routes
-  {
-    path: "/influencer/login",
-    element: <InfluencerLogin />,
-  },
-  {
-    path: "/influencer",
-    element: (
-      <InfluencerPortalProtectedRoute>
-        <InfluencerLayout />
-      </InfluencerPortalProtectedRoute>
-    ),
-    children: [
-      { index: true, element: <InfluencerDashboard /> },
-      { path: "campaigns", element: <InfluencerCampaignsPage /> },
-      { path: "earnings", element: <InfluencerEarningsPage /> },
-      { path: "settings", element: <InfluencerSettings /> },
-    ],
-  },
+  // Legacy redirects (old /partner and /influencer routes)
+  { path: "/partner/login", element: <Navigate to="/creator/login" replace /> },
+  { path: "/partner/*", element: <Navigate to="/creator" replace /> },
+  { path: "/influencer/login", element: <Navigate to="/creator/login" replace /> },
+  { path: "/influencer/*", element: <Navigate to="/creator" replace /> },
 
   { path: "*", element: <NotFoundPage /> },
 ]);

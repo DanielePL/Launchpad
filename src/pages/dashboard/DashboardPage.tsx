@@ -73,7 +73,7 @@ export function DashboardPage() {
 
   const isLoading = comprehensiveLoading || serviceLoading || breakEvenLoading;
 
-  // Pending partner approvals (only for super admin)
+  // Pending creator approvals (only for super admin)
   const pendingApprovals = partners?.filter(p => p.status === "pending_approval") || [];
 
   const handleApprovePartner = async (partnerId: string, approved: boolean) => {
@@ -104,11 +104,11 @@ export function DashboardPage() {
 
   const totalServiceCost = pieData.reduce((sum, d) => sum + d.value, 0);
 
-  // Active partners
+  // Active creators
   const activePartners = partners?.filter(p => p.status === "active").length || 0;
   const totalPendingPayout = pendingPayouts?.total_pending || 0;
 
-  // Partner monitoring
+  // Creator monitoring
   const getDaysSinceLastReferral = (lastReferralAt?: string) => {
     if (!lastReferralAt) return Infinity;
     const lastDate = new Date(lastReferralAt);
@@ -116,14 +116,14 @@ export function DashboardPage() {
     return Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  // Needs Attention: Active partners with 0 referrals this month OR no referral in 14+ days
+  // Needs Attention: Active creators with 0 referrals this month OR no referral in 14+ days
   const needsAttention = partners?.filter((p) => {
     if (p.status !== "active") return false;
     const daysSince = getDaysSinceLastReferral(p.last_referral_at);
     return (p.referrals_this_month === 0) || daysSince >= 14;
   }).slice(0, 3) || [];
 
-  // Partner Wins: Partners with referrals this month
+  // Creator Wins: Creators with referrals this month
   const partnerWins = partners?.filter((p) => {
     return (p.referrals_this_month || 0) > 0;
   }).sort((a, b) => (b.referrals_this_month || 0) - (a.referrals_this_month || 0)).slice(0, 3) || [];
@@ -225,7 +225,7 @@ export function DashboardPage() {
         </Link>
       </div>
 
-      {/* Pending Partner Approvals - Super Admin Only */}
+      {/* Pending Creator Approvals - Super Admin Only */}
       {isSuperAdmin && pendingApprovals.length > 0 && (
         <div className="glass rounded-2xl p-6 border-2 border-orange-500/30 bg-orange-500/5">
           <div className="flex items-center gap-4 mb-4">
@@ -233,9 +233,9 @@ export function DashboardPage() {
               <UserCheck className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Partner Approvals Required</h2>
+              <h2 className="text-xl font-bold">Creator Approvals Required</h2>
               <p className="text-sm text-muted-foreground">
-                {pendingApprovals.length} partner{pendingApprovals.length !== 1 ? "s" : ""} waiting for your approval
+                {pendingApprovals.length} creator{pendingApprovals.length !== 1 ? "s" : ""} waiting for your approval
               </p>
             </div>
           </div>
@@ -518,14 +518,14 @@ export function DashboardPage() {
           </p>
         </Link>
 
-        {/* Partners */}
+        {/* Creators */}
         <Link to="/partners" className="glass rounded-2xl p-5 transition-smooth hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.2)]">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-500 flex items-center justify-center">
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Active Partners</p>
+              <p className="text-sm text-muted-foreground">Active Creators</p>
               {partnersLoading ? (
                 <Skeleton className="h-6 w-12 mt-1" />
               ) : (
@@ -554,12 +554,12 @@ export function DashboardPage() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            {pendingPayouts?.pending_payouts?.filter(p => p.eligible).length || 0} partners ready
+            {pendingPayouts?.pending_payouts?.filter(p => p.eligible).length || 0} creators ready
           </p>
         </Link>
       </div>
 
-      {/* Partner Monitoring & Activity */}
+      {/* Creator Monitoring & Activity */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Needs Attention */}
         <div className="glass rounded-2xl p-5">
@@ -570,7 +570,7 @@ export function DashboardPage() {
               </div>
               <div>
                 <h3 className="font-bold">Needs Attention</h3>
-                <p className="text-xs text-muted-foreground">Inactive partners</p>
+                <p className="text-xs text-muted-foreground">Inactive creators</p>
               </div>
             </div>
             <Link to="/partners">
@@ -609,12 +609,12 @@ export function DashboardPage() {
           ) : (
             <div className="text-center py-4 text-muted-foreground">
               <TrendingUp className="w-6 h-6 mx-auto mb-1 opacity-50" />
-              <p className="text-xs">All partners active!</p>
+              <p className="text-xs">All creators active!</p>
             </div>
           )}
         </div>
 
-        {/* Partner Wins */}
+        {/* Creator Wins */}
         <div className="glass rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -622,7 +622,7 @@ export function DashboardPage() {
                 <Trophy className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <h3 className="font-bold">Partner Wins</h3>
+                <h3 className="font-bold">Creator Wins</h3>
                 <p className="text-xs text-muted-foreground">Top performers</p>
               </div>
             </div>
@@ -700,7 +700,7 @@ export function DashboardPage() {
                   className="flex items-center justify-between p-3 rounded-xl bg-background/50 hover:bg-background/70 transition-smooth"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{referral.partner_name || "Partner"}</p>
+                    <p className="font-medium text-sm truncate">{referral.partner_name || "Creator"}</p>
                     <p className="text-xs text-muted-foreground truncate">
                       {referral.user_email || "New signup"}
                     </p>
@@ -744,7 +744,7 @@ export function DashboardPage() {
           <Link to="/partners">
             <Button variant="outline" className="rounded-xl">
               <UserPlus className="w-4 h-4 mr-2" />
-              Add Partner
+              Add Creator
             </Button>
           </Link>
           <Link to="/payouts">

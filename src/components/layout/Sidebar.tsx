@@ -276,7 +276,7 @@ export function Sidebar() {
         {(canAccessCRM || hasPermission("partners")) && (
           <div className="border-t border-white/10 p-4">
             <a
-              href="/partner"
+              href="/creator"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-background/50 hover:text-foreground transition-smooth"

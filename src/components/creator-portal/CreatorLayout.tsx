@@ -15,13 +15,13 @@ import { Button } from "@/components/ui/button";
 import { usePartnerProfile, usePartnerLogout } from "@/hooks/usePartnerPortal";
 
 const navigation = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/partner" },
-  { label: "Referrals", icon: Users, href: "/partner/referrals" },
-  { label: "Payouts", icon: Wallet, href: "/partner/payouts" },
-  { label: "Settings", icon: Settings, href: "/partner/settings" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/creator" },
+  { label: "Referrals", icon: Users, href: "/creator/referrals" },
+  { label: "Payouts", icon: Wallet, href: "/creator/payouts" },
+  { label: "Settings", icon: Settings, href: "/creator/settings" },
 ];
 
-export function PartnerLayout() {
+export function CreatorLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: profile } = usePartnerProfile();
   const logout = usePartnerLogout();
@@ -29,7 +29,7 @@ export function PartnerLayout() {
 
   const handleLogout = () => {
     logout();
-    navigate("/partner/login");
+    navigate("/creator/login");
   };
 
   return (
@@ -41,7 +41,7 @@ export function PartnerLayout() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary glow-orange">
               <Flame className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-bold">Partner Portal</span>
+            <span className="font-bold">Creator Portal</span>
           </div>
           <Button
             variant="ghost"
@@ -66,12 +66,12 @@ export function PartnerLayout() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary glow-orange">
               <Flame className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold">Partner Portal</span>
+            <span className="text-lg font-bold">Creator Portal</span>
           </div>
 
-          {/* Partner Info */}
+          {/* Creator Info */}
           <div className="border-b border-white/10 p-4 lg:mt-0 mt-16">
-            <p className="font-semibold truncate">{profile?.name || "Partner"}</p>
+            <p className="font-semibold truncate">{profile?.name || "Creator"}</p>
             <p className="text-sm text-muted-foreground truncate">
               {profile?.referral_code || "Loading..."}
             </p>
@@ -86,7 +86,7 @@ export function PartnerLayout() {
                 <NavLink
                   key={item.label}
                   to={item.href}
-                  end={item.href === "/partner"}
+                  end={item.href === "/creator"}
                   onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) =>
                     cn(

@@ -11,10 +11,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { usePartnerProfile, usePartnerStats } from "@/hooks/usePartnerPortal";
 import { CURRENCY } from "@/api/types/partnerPortal";
-import { EarningsChart } from "@/components/partner-portal/EarningsChart";
-import { RecentReferrals } from "@/components/partner-portal/RecentReferrals";
+import { EarningsChart } from "@/components/creator-portal/EarningsChart";
+import { RecentReferrals } from "@/components/creator-portal/RecentReferrals";
 
-export default function PartnerDashboard() {
+export default function CreatorDashboard() {
   const { data: profile } = usePartnerProfile();
   const { data: stats, isLoading } = usePartnerStats();
   const [copied, setCopied] = useState(false);
@@ -80,7 +80,7 @@ export default function PartnerDashboard() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">
-          Welcome back, {profile?.name?.split(" ")[0] || "Partner"}
+          Welcome back, {profile?.name?.split(" ")[0] || "Creator"}
         </h1>
         <p className="text-muted-foreground">
           Here's how your referrals are performing
