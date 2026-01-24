@@ -288,9 +288,9 @@ export function EmployeesPage() {
           <div className="flex items-center gap-3">
             <Lock className="w-5 h-5 text-amber-500 flex-shrink-0" />
             <div>
-              <p className="font-medium text-amber-500">Eingeschraenkter Zugang</p>
+              <p className="font-medium text-amber-500">Restricted Access</p>
               <p className="text-sm text-muted-foreground">
-                Gehaltsdaten sind nur mit spezieller Berechtigung sichtbar.
+                Salary data is only visible with special permission.
               </p>
             </div>
           </div>

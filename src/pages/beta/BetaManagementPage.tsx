@@ -217,23 +217,23 @@ function CsvImportModal({ isOpen, onClose, onImport }: CsvImportModalProps) {
       const parts = line.split(delimiter).map((p) => p.trim().replace(/^["']|["']$/g, ""));
 
       if (parts.length < 3) {
-        throw new Error(`Zeile ${i + 1}: Mindestens 3 Spalten erforderlich (name, email, platform)`);
+        throw new Error(`Row ${i + 1}: At least 3 columns required (name, email, platform)`);
       }
 
       const [name, email, platformRaw] = parts;
       const platform = platformRaw.toLowerCase() as BetaPlatform;
 
       if (!name || !email) {
-        throw new Error(`Zeile ${i + 1}: Name und Email sind erforderlich`);
+        throw new Error(`Row ${i + 1}: Name and email are required`);
       }
 
       if (platform !== "ios" && platform !== "android") {
-        throw new Error(`Zeile ${i + 1}: Platform muss "ios" oder "android" sein, nicht "${platformRaw}"`);
+        throw new Error(`Row ${i + 1}: Platform must be "ios" or "android", not "${platformRaw}"`);
       }
 
       // Basic email validation
       if (!email.includes("@")) {
-        throw new Error(`Zeile ${i + 1}: Ungültige Email "${email}"`);
+        throw new Error(`Row ${i + 1}: Invalid email "${email}"`);
       }
 
       testers.push({ name, email, platform });
@@ -252,7 +252,7 @@ function CsvImportModal({ isOpen, onClose, onImport }: CsvImportModalProps) {
         const parsed = parseCSV(text);
         setPreview(parsed);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Parsing-Fehler");
+        setError(e instanceof Error ? e.message : "Parsing error");
       }
     }
   };
@@ -312,14 +312,14 @@ function CsvImportModal({ isOpen, onClose, onImport }: CsvImportModalProps) {
             />
             <label htmlFor="csv-upload" className="cursor-pointer">
               <FileSpreadsheet className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="font-medium">CSV-Datei hochladen</p>
-              <p className="text-sm text-muted-foreground mt-1">oder Text unten einfügen</p>
+              <p className="font-medium">Upload CSV file</p>
+              <p className="text-sm text-muted-foreground mt-1">or paste text below</p>
             </label>
           </div>
 
           {/* Text Input */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">CSV-Daten (name, email, platform)</label>
+            <label className="text-sm font-medium">CSV data (name, email, platform)</label>
             <textarea
               value={csvData}
               onChange={(e) => handleTextChange(e.target.value)}
@@ -338,7 +338,7 @@ function CsvImportModal({ isOpen, onClose, onImport }: CsvImportModalProps) {
           {/* Preview */}
           {preview.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium">{preview.length} Tester erkannt:</p>
+              <p className="text-sm font-medium">{preview.length} testers detected:</p>
               <div className="max-h-48 overflow-y-auto space-y-2">
                 {preview.map((t, i) => (
                   <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-background/50 text-sm">
@@ -358,7 +358,7 @@ function CsvImportModal({ isOpen, onClose, onImport }: CsvImportModalProps) {
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 rounded-xl">
-              Abbrechen
+              Cancel
             </Button>
             <Button
               onClick={handleImport}
@@ -366,7 +366,7 @@ function CsvImportModal({ isOpen, onClose, onImport }: CsvImportModalProps) {
               className="flex-1 rounded-xl"
             >
               <Upload className="w-4 h-4 mr-2" />
-              {preview.length} Tester importieren
+              Import {preview.length} testers
             </Button>
           </div>
         </div>
@@ -584,8 +584,8 @@ export function BetaManagementPage() {
 
   const handleImportTesters = (testers: BetaTesterCreate[]) => {
     createTesters.mutate(testers, {
-      onSuccess: (data) => toast.success(`${data.length} Tester erfolgreich importiert`),
-      onError: (error) => toast.error(`Import fehlgeschlagen: ${error.message}`),
+      onSuccess: (data) => toast.success(`${data.length} testers imported successfully`),
+      onError: (error) => toast.error(`Import failed: ${error.message}`),
     });
   };
 
@@ -694,7 +694,7 @@ export function BetaManagementPage() {
               {iosLoading ? (
                 <Skeleton className="h-7 w-12 mt-1" />
               ) : (
-                <p className="text-xl font-bold">{uniqueIosTesters} <span className="text-sm font-normal text-muted-foreground">aktiv</span></p>
+                <p className="text-xl font-bold">{uniqueIosTesters} <span className="text-sm font-normal text-muted-foreground">active</span></p>
               )}
             </div>
           </div>
@@ -710,7 +710,7 @@ export function BetaManagementPage() {
               {androidLoading ? (
                 <Skeleton className="h-7 w-12 mt-1" />
               ) : (
-                <p className="text-xl font-bold">{uniqueAndroidTesters} <span className="text-sm font-normal text-muted-foreground">aktiv</span></p>
+                <p className="text-xl font-bold">{uniqueAndroidTesters} <span className="text-sm font-normal text-muted-foreground">active</span></p>
               )}
             </div>
           </div>

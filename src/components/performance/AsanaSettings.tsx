@@ -44,7 +44,7 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
 
   const validateToken = async () => {
     if (!token.trim()) {
-      setError("Bitte Token eingeben");
+      setError("Please enter token");
       return;
     }
 
@@ -75,7 +75,7 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
         setStep("workspace");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Token ungültig oder Verbindung fehlgeschlagen");
+      setError(err instanceof Error ? err.message : "Token invalid or connection failed");
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +83,7 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
 
   const selectWorkspace = () => {
     if (!selectedWorkspace) {
-      setError("Bitte Workspace auswählen");
+      setError("Please select a workspace");
       return;
     }
 
@@ -129,8 +129,8 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-bold">Asana verbinden</h2>
-              <p className="text-xs text-muted-foreground">Task-Daten synchronisieren</p>
+              <h2 className="text-lg font-bold">Connect Asana</h2>
+              <p className="text-xs text-muted-foreground">Sync task data</p>
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="rounded-xl">
@@ -143,7 +143,7 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
           <div className="space-y-4">
             <div className="p-4 rounded-xl bg-muted/50">
               <p className="text-sm text-muted-foreground mb-2">
-                Du brauchst einen Personal Access Token von Asana:
+                You need a Personal Access Token from Asana:
               </p>
               <a
                 href="https://app.asana.com/0/my-apps"
@@ -151,7 +151,7 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
               >
-                Asana Developer Console öffnen
+                Open Asana Developer Console
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
@@ -185,10 +185,10 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Verbinde...
+                  Connecting...
                 </>
               ) : (
-                "Verbinden"
+                "Connect"
               )}
             </Button>
           </div>
@@ -200,7 +200,7 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
                 <Building2 className="w-4 h-4" />
-                Workspace auswählen
+                Select workspace
               </label>
               <div className="space-y-2">
                 {workspaces.map((ws) => (
@@ -232,14 +232,14 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
                 onClick={() => setStep("token")}
                 className="rounded-xl"
               >
-                Zurück
+                Back
               </Button>
               <Button
                 onClick={selectWorkspace}
                 disabled={!selectedWorkspace}
                 className="flex-1 rounded-xl"
               >
-                Weiter
+                Next
               </Button>
             </div>
           </div>
@@ -253,9 +253,9 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
             </div>
 
             <div>
-              <h3 className="text-lg font-bold">Erfolgreich verbunden!</h3>
+              <h3 className="text-lg font-bold">Successfully connected!</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Asana ist jetzt mit dem Performance Tracker verbunden.
+                Asana is now connected to the Performance Tracker.
               </p>
             </div>
 
@@ -264,7 +264,7 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
               <p className="font-medium">
                 {workspaces.find(w => w.gid === selectedWorkspace)?.name ||
                  localStorage.getItem("asana_workspace_name") ||
-                 "Unbekannt"}
+                 "Unknown"}
               </p>
             </div>
 
@@ -274,13 +274,13 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
                 onClick={handleDisconnect}
                 className="rounded-xl"
               >
-                Trennen
+                Disconnect
               </Button>
               <Button
                 onClick={handleComplete}
                 className="flex-1 rounded-xl glow-orange"
               >
-                Fertig
+                Done
               </Button>
             </div>
           </div>
@@ -289,7 +289,7 @@ export function AsanaSettings({ isOpen, onClose, onConfigured }: AsanaSettingsPr
         {/* Help text */}
         <div className="mt-6 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground text-center">
-            Der Token wird lokal gespeichert und nur für API-Anfragen verwendet.
+            The token is stored locally and only used for API requests.
           </p>
         </div>
       </div>

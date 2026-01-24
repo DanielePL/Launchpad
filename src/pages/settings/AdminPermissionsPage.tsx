@@ -56,13 +56,13 @@ function EditPermissionsModal({
       <div className="w-full max-w-md rounded-2xl bg-card p-6 shadow-xl">
         <div className="flex items-center gap-2 mb-6">
           <Shield className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">Berechtigungen: {email}</h2>
+          <h2 className="text-lg font-semibold">Permissions: {email}</h2>
         </div>
 
         {/* Standard Permissions */}
         <div className="mb-6">
           <h3 className="text-sm font-medium text-muted-foreground mb-3">
-            STANDARD BEREICHE
+            STANDARD AREAS
           </h3>
           <div className="space-y-2">
             {TOP_LEVEL_PERMISSIONS.map((config) => (
@@ -87,11 +87,11 @@ function EditPermissionsModal({
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="h-4 w-4 text-red-500" />
             <h3 className="text-sm font-medium text-red-500">
-              STRENG VERTRAULICH
+              HIGHLY CONFIDENTIAL
             </h3>
           </div>
           <p className="text-xs text-muted-foreground mb-3">
-            Zugang zu Gehältern, Boni und Umsatzbeteiligungen
+            Access to salaries, bonuses and revenue shares
           </p>
           <label className="flex items-center gap-3 rounded-lg p-2 hover:bg-red-500/10 cursor-pointer">
             <input
@@ -100,7 +100,7 @@ function EditPermissionsModal({
               onChange={() => toggleSensitivePermission("compensation:view")}
               className="h-4 w-4 rounded border-red-500/30 text-red-500 focus:ring-red-500"
             />
-            <span className="text-sm">Compensation einsehen</span>
+            <span className="text-sm">View compensation</span>
           </label>
         </div>
 
@@ -111,7 +111,7 @@ function EditPermissionsModal({
           </Button>
           <Button onClick={handleSave}>
             <Check className="h-4 w-4 mr-2" />
-            Speichern
+            Save
           </Button>
         </div>
       </div>
@@ -139,9 +139,9 @@ export function AdminPermissionsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <Lock className="h-16 w-16 text-muted-foreground/50 mb-4" />
-        <h2 className="text-xl font-semibold">Zugriff verweigert</h2>
+        <h2 className="text-xl font-semibold">Access denied</h2>
         <p className="text-muted-foreground mt-2">
-          Nur Super Admin kann Berechtigungen verwalten.
+          Only Super Admin can manage permissions.
         </p>
       </div>
     );
@@ -153,9 +153,9 @@ export function AdminPermissionsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Admin Berechtigungen</h1>
+        <h1 className="text-2xl font-bold">Admin Permissions</h1>
         <p className="text-muted-foreground">
-          Verwalte Zugriffsrechte für Admin-Accounts
+          Manage access rights for admin accounts
         </p>
       </div>
 
@@ -192,12 +192,12 @@ export function AdminPermissionsPage() {
 
                   <div className="mt-2 text-sm text-muted-foreground">
                     {isSuperAdminAccount ? (
-                      <span>Voller Zugang (nicht editierbar)</span>
+                      <span>Full access (not editable)</span>
                     ) : (
                       <span>
-                        Bereiche:{" "}
+                        Areas:{" "}
                         {permissionCount === 0
-                          ? "Keine"
+                          ? "None"
                           : admin.permissions
                               .filter((p) => !p.includes(":"))
                               .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
@@ -208,8 +208,8 @@ export function AdminPermissionsPage() {
 
                   {admin.updated_at && !isSuperAdminAccount && (
                     <p className="mt-1 text-xs text-muted-foreground/70">
-                      Zuletzt aktualisiert:{" "}
-                      {new Date(admin.updated_at).toLocaleDateString("de-CH")}
+                      Last updated:{" "}
+                      {new Date(admin.updated_at).toLocaleDateString("en-US")}
                     </p>
                   )}
                 </div>
@@ -220,7 +220,7 @@ export function AdminPermissionsPage() {
                     size="sm"
                     onClick={() => setEditingEmail(admin.email)}
                   >
-                    Bearbeiten
+                    Edit
                   </Button>
                 )}
               </div>
@@ -234,10 +234,10 @@ export function AdminPermissionsPage() {
         <div className="flex items-start gap-3">
           <Shield className="h-5 w-5 text-muted-foreground mt-0.5" />
           <div className="text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">Sicherheitshinweis</p>
+            <p className="font-medium text-foreground">Security notice</p>
             <p className="mt-1">
-              Berechtigungen werden lokal gespeichert. In der Produktionsversion
-              werden diese in der Datenbank synchronisiert.
+              Permissions are stored locally. In production, these will be
+              synced to the database.
             </p>
           </div>
         </div>

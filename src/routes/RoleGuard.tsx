@@ -58,7 +58,7 @@ export function PermissionGuard({
   // Check super admin requirement
   if (superAdminOnly && !isSuperAdmin) {
     if (showAccessDenied) {
-      return <AccessDenied message="Nur Super Admin hat Zugang zu dieser Seite." />;
+      return <AccessDenied message="Only Super Admin has access to this page." />;
     }
     return <Navigate to="/" replace />;
   }
@@ -66,7 +66,7 @@ export function PermissionGuard({
   // Check permission
   if (!hasPermission(permission)) {
     if (showAccessDenied) {
-      return <AccessDenied message="Du hast keine Berechtigung für diese Seite." />;
+      return <AccessDenied message="You don't have permission for this page." />;
     }
     return <Navigate to="/" replace />;
   }
@@ -78,7 +78,7 @@ function AccessDenied({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20">
       <Lock className="h-16 w-16 text-muted-foreground/50 mb-4" />
-      <h2 className="text-xl font-semibold">Zugriff verweigert</h2>
+      <h2 className="text-xl font-semibold">Access denied</h2>
       <p className="text-muted-foreground mt-2">{message}</p>
     </div>
   );

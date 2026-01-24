@@ -363,7 +363,7 @@ export function CrashesPage() {
               <Bug className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Heute</p>
+              <p className="text-sm text-muted-foreground">Today</p>
               {isLoading ? (
                 <Skeleton className="h-7 w-12 mt-1" />
               ) : (
@@ -379,7 +379,7 @@ export function CrashesPage() {
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Diese Woche</p>
+              <p className="text-sm text-muted-foreground">This Week</p>
               {isLoading ? (
                 <Skeleton className="h-7 w-12 mt-1" />
               ) : (
@@ -395,7 +395,7 @@ export function CrashesPage() {
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Betroffene User</p>
+              <p className="text-sm text-muted-foreground">Affected Users</p>
               {isLoading ? (
                 <Skeleton className="h-7 w-12 mt-1" />
               ) : (
@@ -424,7 +424,7 @@ export function CrashesPage() {
         <div className="glass rounded-2xl p-5">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">7-Tage Trend</p>
+              <p className="text-sm text-muted-foreground">7-Day Trend</p>
               <BarChart3 className="w-4 h-4 text-muted-foreground" />
             </div>
             <MiniChart data={stats.crashes_by_day} />
@@ -434,7 +434,7 @@ export function CrashesPage() {
 
       {/* Version Breakdown */}
       <div className="glass rounded-2xl p-5">
-        <h3 className="font-bold mb-4">Crashes nach Version</h3>
+        <h3 className="font-bold mb-4">Crashes by Version</h3>
         <div className="flex gap-4 flex-wrap">
           {stats.crashes_by_version.map((v) => (
             <div key={v.version} className="flex items-center gap-3 px-4 py-2 rounded-xl bg-background/50">
@@ -539,9 +539,9 @@ export function CrashesPage() {
         ) : (
           <div className="glass rounded-2xl p-12 text-center">
             <Zap className="w-16 h-16 mx-auto mb-4 text-green-500/50" />
-            <h3 className="text-xl font-bold mb-2">Keine Crashes</h3>
+            <h3 className="text-xl font-bold mb-2">No Crashes</h3>
             <p className="text-muted-foreground">
-              {searchQuery ? "Keine Treffer für diese Suche" : "Alles läuft stabil!"}
+              {searchQuery ? "No matches for this search" : "Everything is running stable!"}
             </p>
           </div>
         )}
@@ -553,9 +553,9 @@ export function CrashesPage() {
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-green-500">BigQuery verbunden</p>
+              <p className="font-medium text-green-500">BigQuery connected</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Daten werden live aus BigQuery geladen. Projekt: prometheusv1-c9310
+                Data is loaded live from BigQuery. Project: prometheusv1-c9310
               </p>
             </div>
           </div>
@@ -565,9 +565,9 @@ export function CrashesPage() {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-yellow-500">Demo-Modus</p>
+              <p className="font-medium text-yellow-500">Demo Mode</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Backend-Endpoint fehlt. Fuege den /crashes Endpoint zu deinem Render-Backend hinzu um echte BigQuery-Daten zu laden.
+                Backend endpoint missing. Add the /crashes endpoint to your Render backend to load real BigQuery data.
               </p>
             </div>
           </div>

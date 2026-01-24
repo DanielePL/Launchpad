@@ -24,11 +24,10 @@ import {
 import type { PerformanceFilters, PerformancePeriod, EmployeePerformance } from "@/api/types/performance";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { de } from "date-fns/locale";
 import { AsanaSettings } from "@/components/performance/AsanaSettings";
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("de-CH", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "CHF",
     minimumFractionDigits: 0,
@@ -58,7 +57,7 @@ function TrendBadge({ trend, percent }: { trend: "up" | "down" | "stable"; perce
   if (trend === "stable") {
     return (
       <span className="text-xs text-muted-foreground">
-        stabil
+        stable
       </span>
     );
   }
@@ -174,11 +173,11 @@ function EmployeeRow({
 }
 
 const PERIOD_OPTIONS: { value: PerformancePeriod; label: string }[] = [
-  { value: "this_week", label: "Diese Woche" },
-  { value: "last_week", label: "Letzte Woche" },
-  { value: "this_month", label: "Dieser Monat" },
-  { value: "last_month", label: "Letzter Monat" },
-  { value: "this_quarter", label: "Dieses Quartal" },
+  { value: "this_week", label: "This Week" },
+  { value: "last_week", label: "Last Week" },
+  { value: "this_month", label: "This Month" },
+  { value: "last_month", label: "Last Month" },
+  { value: "this_quarter", label: "This Quarter" },
 ];
 
 export function PerformanceDashboard() {
@@ -229,7 +228,7 @@ export function PerformanceDashboard() {
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold mb-2">Performance Tracker</h1>
           <p className="text-muted-foreground text-lg">
-            Mitarbeiter-Leistung basierend auf Asana Tasks & Revenue
+            Employee performance based on Asana tasks & revenue
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -265,9 +264,9 @@ export function PerformanceDashboard() {
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-500" />
               <div>
-                <p className="font-medium text-amber-500">Asana nicht verbunden</p>
+                <p className="font-medium text-amber-500">Asana not connected</p>
                 <p className="text-sm text-muted-foreground">
-                  Verbinde Asana um echte Task-Daten zu sehen. Aktuell werden Demo-Daten angezeigt.
+                  Connect Asana to see real task data. Currently showing demo data.
                 </p>
               </div>
             </div>
@@ -277,7 +276,7 @@ export function PerformanceDashboard() {
               className="rounded-xl"
               onClick={() => setShowAsanaSettings(true)}
             >
-              Verbinden
+              Connect
             </Button>
           </div>
         </div>
@@ -306,7 +305,7 @@ export function PerformanceDashboard() {
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Tasks Erledigt</p>
+              <p className="text-sm text-muted-foreground">Tasks Completed</p>
               {isLoading ? (
                 <Skeleton className="h-8 w-20 mt-1" />
               ) : (
@@ -322,7 +321,7 @@ export function PerformanceDashboard() {
               <DollarSign className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Gesamt Revenue</p>
+              <p className="text-sm text-muted-foreground">Total Revenue</p>
               {isLoading ? (
                 <Skeleton className="h-8 w-24 mt-1" />
               ) : (
@@ -378,7 +377,7 @@ export function PerformanceDashboard() {
             <div className="glass rounded-2xl p-5 border border-red-500/20">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-5 h-5 text-red-500" />
-                <h3 className="font-bold text-red-500">Braucht Aufmerksamkeit</h3>
+                <h3 className="font-bold text-red-500">Needs Attention</h3>
               </div>
               <div className="space-y-3">
                 {teamData.needsAttention.map((emp) => (
@@ -393,7 +392,7 @@ export function PerformanceDashboard() {
                       <div>
                         <p className="font-medium">{emp.employeeName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {emp.currentPeriod.tasksOverdue} Tasks überfällig
+                          {emp.currentPeriod.tasksOverdue} tasks overdue
                         </p>
                       </div>
                     </div>
@@ -432,7 +431,7 @@ export function PerformanceDashboard() {
                       <div>
                         <p className="font-medium">{emp.employeeName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {emp.currentPeriod.tasksCompleted} Tasks erledigt
+                          {emp.currentPeriod.tasksCompleted} tasks completed
                         </p>
                       </div>
                     </div>
@@ -453,7 +452,7 @@ export function PerformanceDashboard() {
 
       {/* Sort Controls */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Sortieren:</span>
+        <span className="text-sm text-muted-foreground">Sort by:</span>
         {[
           { value: "score", label: "Score" },
           { value: "tasks", label: "Tasks" },
@@ -505,9 +504,9 @@ export function PerformanceDashboard() {
         ) : (
           <div className="glass rounded-2xl p-12 text-center">
             <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-            <h3 className="text-xl font-bold mb-2">Keine Daten</h3>
+            <h3 className="text-xl font-bold mb-2">No data</h3>
             <p className="text-muted-foreground">
-              Verbinde Asana um Mitarbeiter-Daten zu sehen
+              Connect Asana to see employee data
             </p>
           </div>
         )}
@@ -518,7 +517,7 @@ export function PerformanceDashboard() {
         <div className="glass rounded-2xl p-6">
           <h3 className="font-bold mb-4 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-primary" />
-            Letzte Aktivitäten
+            Recent Activities
           </h3>
           <div className="space-y-3">
             {activities.map((activity) => (
@@ -544,11 +543,10 @@ export function PerformanceDashboard() {
                   <p className="text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(activity.completedAt), {
                       addSuffix: true,
-                      locale: de,
                     })}
                   </p>
                   {!activity.wasOnTime && activity.daysLate && (
-                    <p className="text-xs text-red-500">{activity.daysLate} Tage zu spät</p>
+                    <p className="text-xs text-red-500">{activity.daysLate} days late</p>
                   )}
                 </div>
               </div>
