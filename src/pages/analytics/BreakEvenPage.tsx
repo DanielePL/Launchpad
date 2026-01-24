@@ -1,4 +1,4 @@
-import { Target, Users, TrendingUp, Calculator, Flame, DollarSign, Crown, Sparkles } from "lucide-react";
+import { Target, Users, TrendingUp, Calculator, Flame, Crown, Sparkles } from "lucide-react";
 import { useBreakEven } from "@/hooks/useRevenue";
 import { useComprehensiveSummary } from "@/hooks/useCosts";
 import { Skeleton } from "@/components/ui/skeleton";
