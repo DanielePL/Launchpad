@@ -11,7 +11,6 @@ import {
   ChevronDown,
   BarChart3,
   Flame,
-  Target,
   ExternalLink,
   Activity,
   FlaskConical,
@@ -72,14 +71,17 @@ const allNavigation: NavItem[] = [
     ],
   },
   {
-    label: "Creators",
+    label: "Partners",
     icon: Handshake,
     permission: "partners",
     children: [
-      { label: "All Creators", href: "/partners" },
+      { label: "All Partners", href: "/partners" },
       { label: "Enterprise Deals", href: "/deals" },
       { label: "Contracts", href: "/contracts" },
       { label: "Payouts", href: "/payouts" },
+      { label: "Outreach", href: "/influencers", permission: "influencers" },
+      { label: "Demo Wizard", href: "/sales/demo", permission: "sales" },
+      { label: "Pipeline / CRM", href: "/sales/crm", permission: "sales" },
     ],
   },
   {
@@ -113,16 +115,6 @@ const allNavigation: NavItem[] = [
     icon: Bug,
     href: "/crashes",
     permission: "users",
-  },
-  {
-    label: "Sales",
-    icon: Target,
-    permission: "sales",
-    children: [
-      { label: "Demo Wizard", href: "/sales/demo" },
-      { label: "Pipeline / CRM", href: "/sales/crm" },
-      { label: "Creator Outreach", href: "/influencers", permission: "influencers" },
-    ],
   },
   {
     label: "Settings",
