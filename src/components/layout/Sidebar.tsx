@@ -15,6 +15,7 @@ import {
   Instagram,
   ExternalLink,
   Activity,
+  FlaskConical,
   type LucideIcon,
 } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -95,6 +96,12 @@ const allNavigation: NavItem[] = [
     label: "Users",
     icon: Users,
     href: "/users",
+    permission: "users",
+  },
+  {
+    label: "Beta",
+    icon: FlaskConical,
+    href: "/beta",
     permission: "users",
   },
   {

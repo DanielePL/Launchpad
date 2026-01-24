@@ -26,6 +26,7 @@ import InfluencersPage from "@/pages/influencers/InfluencersPage";
 import InfluencerManagerLogin from "@/pages/influencers/InfluencerManagerLogin";
 import { AdminPermissionsPage } from "@/pages/settings/AdminPermissionsPage";
 import { PerformanceDashboard } from "@/pages/performance/PerformanceDashboard";
+import { BetaManagementPage } from "@/pages/beta/BetaManagementPage";
 
 // Partner Portal Pages
 import PartnerLogin from "@/pages/partner-portal/PartnerLogin";
@@ -79,6 +80,9 @@ export const router = createBrowserRouter([
 
       // Performance
       { path: "performance", element: <PerformanceDashboard /> },
+
+      // Beta Management
+      { path: "beta", element: <BetaManagementPage /> },
 
       // Users
       { path: "users", element: <UsersListPage /> },
