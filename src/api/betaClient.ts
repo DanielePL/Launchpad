@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { supabase, isSupabaseConfigured } from "./supabaseClient";
 import type {
   BetaTester,
   BetaTesterCreate,
@@ -13,12 +13,23 @@ import type {
   BetaOverview,
 } from "./types";
 
+// Helper to check if Supabase is available
+function requireSupabase() {
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error("Supabase not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env");
+  }
+  return supabase;
+}
+
 // =====================================================
 // Beta Testers API
 // =====================================================
 
 export async function getBetaTesters(filters?: BetaTesterFilters): Promise<BetaTester[]> {
-  let query = supabase
+  if (!isSupabaseConfigured) return [];
+
+  const client = requireSupabase();
+  let query = client
     .from("beta_testers")
     .select("*");
 
@@ -49,7 +60,8 @@ export async function getBetaTesters(filters?: BetaTesterFilters): Promise<BetaT
 }
 
 export async function getBetaTesterById(id: string): Promise<BetaTester | null> {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+  const { data, error } = await client
     .from("beta_testers")
     .select("*")
     .eq("id", id)
@@ -60,7 +72,8 @@ export async function getBetaTesterById(id: string): Promise<BetaTester | null> 
 }
 
 export async function createBetaTester(tester: BetaTesterCreate): Promise<BetaTester> {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+  const { data, error } = await client
     .from("beta_testers")
     .insert(tester)
     .select()
@@ -71,7 +84,8 @@ export async function createBetaTester(tester: BetaTesterCreate): Promise<BetaTe
 }
 
 export async function createBetaTesters(testers: BetaTesterCreate[]): Promise<BetaTester[]> {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+  const { data, error } = await client
     .from("beta_testers")
     .insert(testers)
     .select();
@@ -81,7 +95,8 @@ export async function createBetaTesters(testers: BetaTesterCreate[]): Promise<Be
 }
 
 export async function updateBetaTester(id: string, update: BetaTesterUpdate): Promise<BetaTester> {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+  const { data, error } = await client
     .from("beta_testers")
     .update(update)
     .eq("id", id)
@@ -93,7 +108,8 @@ export async function updateBetaTester(id: string, update: BetaTesterUpdate): Pr
 }
 
 export async function deleteBetaTester(id: string): Promise<void> {
-  const { error } = await supabase
+  const client = requireSupabase();
+  const { error } = await client
     .from("beta_testers")
     .delete()
     .eq("id", id);
@@ -108,7 +124,8 @@ export async function inviteBetaTester(id: string): Promise<BetaTester> {
 }
 
 export async function activateBetaTester(id: string): Promise<BetaTester> {
-  const { data, error } = await supabase
+  const client = requireSupabase();
+  const { data, error } = await client
     .from("beta_testers")
     .update({
       status: "active",
@@ -123,7 +140,10 @@ export async function activateBetaTester(id: string): Promise<BetaTester> {
 }
 
 export async function getBetaTesterStats(): Promise<BetaTesterStats[]> {
-  const { data, error } = await supabase.rpc("get_beta_tester_stats");
+  if (!isSupabaseConfigured) return [];
+
+  const client = requireSupabase();
+  const { data, error } = await client.rpc("get_beta_tester_stats");
 
   if (error) {
     // Fallback: Manuell berechnen wenn RPC nicht existiert
@@ -150,7 +170,10 @@ export async function getBetaTesterStats(): Promise<BetaTesterStats[]> {
 // =====================================================
 
 export async function getBetaFeedback(filters?: BetaFeedbackFilters): Promise<BetaFeedback[]> {
-  let query = supabase
+  if (!isSupabaseConfigured) return [];
+
+  const client = requireSupabase();
+  let query = client
     .from("beta_feedback")
     .select("*");
 
@@ -181,13 +204,14 @@ export async function getBetaFeedback(filters?: BetaFeedbackFilters): Promise<Be
 }
 
 export async function updateBetaFeedback(id: string, update: BetaFeedbackUpdate): Promise<BetaFeedback> {
+  const client = requireSupabase();
   const updateData: Record<string, unknown> = { ...update };
 
   if (update.status === "fixed" || update.status === "wont_fix") {
     updateData.resolved_at = new Date().toISOString();
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("beta_feedback")
     .update(updateData)
     .eq("id", id)
@@ -203,7 +227,10 @@ export async function updateBetaFeedback(id: string, update: BetaFeedbackUpdate)
 // =====================================================
 
 export async function getIosBetaFeedback(filters?: BetaFeedbackFilters): Promise<BetaFeedback[]> {
-  let query = supabase
+  if (!isSupabaseConfigured) return [];
+
+  const client = requireSupabase();
+  let query = client
     .from("ios_beta_feedback")
     .select("*");
 
@@ -234,13 +261,14 @@ export async function getIosBetaFeedback(filters?: BetaFeedbackFilters): Promise
 }
 
 export async function updateIosBetaFeedback(id: string, update: BetaFeedbackUpdate): Promise<BetaFeedback> {
+  const client = requireSupabase();
   const updateData: Record<string, unknown> = { ...update };
 
   if (update.status === "fixed" || update.status === "wont_fix") {
     updateData.resolved_at = new Date().toISOString();
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("ios_beta_feedback")
     .update(updateData)
     .eq("id", id)

@@ -19,6 +19,9 @@ import {
   ChevronDown,
   ChevronUp,
   Filter,
+  Upload,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +30,7 @@ import {
   useBetaTesters,
   useBetaOverview,
   useCreateBetaTester,
+  useCreateBetaTesters,
   useDeleteBetaTester,
   useInviteBetaTester,
   useActivateBetaTester,
@@ -37,6 +41,7 @@ import {
 } from "@/hooks/useBeta";
 import type {
   BetaTester,
+  BetaTesterCreate,
   BetaTesterFilters,
   BetaFeedback,
   BetaFeedbackFilters,
@@ -172,6 +177,199 @@ function AddTesterModal({ isOpen, onClose, onAdd }: AddTesterModalProps) {
             </Button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================
+// CSV Import Modal
+// =====================================================
+
+interface CsvImportModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onImport: (testers: BetaTesterCreate[]) => void;
+}
+
+function CsvImportModal({ isOpen, onClose, onImport }: CsvImportModalProps) {
+  const [csvData, setCsvData] = useState("");
+  const [preview, setPreview] = useState<BetaTesterCreate[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!isOpen) return null;
+
+  const parseCSV = (text: string): BetaTesterCreate[] => {
+    const lines = text.trim().split("\n");
+    const testers: BetaTesterCreate[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      // Skip header row if detected
+      if (i === 0 && (line.toLowerCase().includes("name") || line.toLowerCase().includes("email"))) {
+        continue;
+      }
+
+      // Support both comma and semicolon as delimiter
+      const delimiter = line.includes(";") ? ";" : ",";
+      const parts = line.split(delimiter).map((p) => p.trim().replace(/^["']|["']$/g, ""));
+
+      if (parts.length < 3) {
+        throw new Error(`Zeile ${i + 1}: Mindestens 3 Spalten erforderlich (name, email, platform)`);
+      }
+
+      const [name, email, platformRaw] = parts;
+      const platform = platformRaw.toLowerCase() as BetaPlatform;
+
+      if (!name || !email) {
+        throw new Error(`Zeile ${i + 1}: Name und Email sind erforderlich`);
+      }
+
+      if (platform !== "ios" && platform !== "android") {
+        throw new Error(`Zeile ${i + 1}: Platform muss "ios" oder "android" sein, nicht "${platformRaw}"`);
+      }
+
+      // Basic email validation
+      if (!email.includes("@")) {
+        throw new Error(`Zeile ${i + 1}: Ungültige Email "${email}"`);
+      }
+
+      testers.push({ name, email, platform });
+    }
+
+    return testers;
+  };
+
+  const handleTextChange = (text: string) => {
+    setCsvData(text);
+    setError(null);
+    setPreview([]);
+
+    if (text.trim()) {
+      try {
+        const parsed = parseCSV(text);
+        setPreview(parsed);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Parsing-Fehler");
+      }
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      handleTextChange(text);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImport = () => {
+    if (preview.length > 0) {
+      onImport(preview);
+      setCsvData("");
+      setPreview([]);
+      onClose();
+    }
+  };
+
+  const downloadTemplate = () => {
+    const template = "name,email,platform\nMax Mustermann,max@example.com,ios\nErika Muster,erika@example.com,android";
+    const blob = new Blob([template], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "beta_testers_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="glass rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">CSV Import</h2>
+          <Button variant="outline" size="sm" onClick={downloadTemplate} className="rounded-xl">
+            <Download className="w-4 h-4 mr-2" />
+            Template
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          {/* File Upload */}
+          <div className="border-2 border-dashed border-border rounded-xl p-6 text-center">
+            <input
+              type="file"
+              accept=".csv,.txt"
+              onChange={handleFileUpload}
+              className="hidden"
+              id="csv-upload"
+            />
+            <label htmlFor="csv-upload" className="cursor-pointer">
+              <FileSpreadsheet className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+              <p className="font-medium">CSV-Datei hochladen</p>
+              <p className="text-sm text-muted-foreground mt-1">oder Text unten einfügen</p>
+            </label>
+          </div>
+
+          {/* Text Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">CSV-Daten (name, email, platform)</label>
+            <textarea
+              value={csvData}
+              onChange={(e) => handleTextChange(e.target.value)}
+              placeholder="Max Mustermann,max@example.com,ios&#10;Erika Muster,erika@example.com,android"
+              className="w-full h-32 px-3 py-2 rounded-xl bg-background border border-input text-sm font-mono resize-none"
+            />
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Preview */}
+          {preview.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{preview.length} Tester erkannt:</p>
+              <div className="max-h-48 overflow-y-auto space-y-2">
+                {preview.map((t, i) => (
+                  <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-background/50 text-sm">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      t.platform === "ios" ? "bg-blue-500/20 text-blue-500" : "bg-green-500/20 text-green-500"
+                    }`}>
+                      {t.platform}
+                    </span>
+                    <span className="font-medium">{t.name}</span>
+                    <span className="text-muted-foreground">{t.email}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 rounded-xl">
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleImport}
+              disabled={preview.length === 0}
+              className="flex-1 rounded-xl"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {preview.length} Tester importieren
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -350,6 +548,7 @@ export function BetaManagementPage() {
   const [activeTab, setActiveTab] = useState<TabType>("testers");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -365,6 +564,7 @@ export function BetaManagementPage() {
 
   // Mutations
   const createTester = useCreateBetaTester();
+  const createTesters = useCreateBetaTesters();
   const deleteTester = useDeleteBetaTester();
   const inviteTester = useInviteBetaTester();
   const activateTester = useActivateBetaTester();
@@ -380,6 +580,13 @@ export function BetaManagementPage() {
         onError: (error) => toast.error(`Failed to add tester: ${error.message}`),
       }
     );
+  };
+
+  const handleImportTesters = (testers: BetaTesterCreate[]) => {
+    createTesters.mutate(testers, {
+      onSuccess: (data) => toast.success(`${data.length} Tester erfolgreich importiert`),
+      onError: (error) => toast.error(`Import fehlgeschlagen: ${error.message}`),
+    });
   };
 
   const handleDeleteTester = (id: string) => {
@@ -445,6 +652,15 @@ export function BetaManagementPage() {
       f.screen_name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
+  // Count unique testers from feedback (by user_id or username)
+  const uniqueAndroidTesters = new Set(
+    androidFeedback?.map((f) => f.user_id || f.username).filter(Boolean) || []
+  ).size;
+
+  const uniqueIosTesters = new Set(
+    iosFeedback?.map((f) => f.user_id || f.username).filter(Boolean) || []
+  ).size;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -453,10 +669,16 @@ export function BetaManagementPage() {
           <p className="text-muted-foreground text-lg">Manage beta testers and feedback</p>
         </div>
         {activeTab === "testers" && (
-          <Button onClick={() => setShowAddModal(true)} className="rounded-xl">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Tester
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowImportModal(true)} className="rounded-xl">
+              <Upload className="w-4 h-4 mr-2" />
+              CSV Import
+            </Button>
+            <Button onClick={() => setShowAddModal(true)} className="rounded-xl">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Tester
+            </Button>
+          </div>
         )}
       </div>
 
@@ -469,10 +691,10 @@ export function BetaManagementPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">iOS Testers</p>
-              {overviewLoading ? (
+              {iosLoading ? (
                 <Skeleton className="h-7 w-12 mt-1" />
               ) : (
-                <p className="text-xl font-bold">{overview?.testers.ios.active || 0} <span className="text-sm font-normal text-muted-foreground">active</span></p>
+                <p className="text-xl font-bold">{uniqueIosTesters} <span className="text-sm font-normal text-muted-foreground">aktiv</span></p>
               )}
             </div>
           </div>
@@ -485,10 +707,10 @@ export function BetaManagementPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Android Testers</p>
-              {overviewLoading ? (
+              {androidLoading ? (
                 <Skeleton className="h-7 w-12 mt-1" />
               ) : (
-                <p className="text-xl font-bold">{overview?.testers.android.active || 0} <span className="text-sm font-normal text-muted-foreground">active</span></p>
+                <p className="text-xl font-bold">{uniqueAndroidTesters} <span className="text-sm font-normal text-muted-foreground">aktiv</span></p>
               )}
             </div>
           </div>
@@ -748,6 +970,13 @@ export function BetaManagementPage() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAdd={handleAddTester}
+      />
+
+      {/* CSV Import Modal */}
+      <CsvImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={handleImportTesters}
       />
     </div>
   );
