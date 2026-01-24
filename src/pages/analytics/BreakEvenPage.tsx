@@ -1,7 +1,8 @@
-import { Target, Users, TrendingUp, Calculator, Flame } from "lucide-react";
+import { Target, Users, TrendingUp, Calculator, Flame, DollarSign, Crown, Sparkles } from "lucide-react";
 import { useBreakEven } from "@/hooks/useRevenue";
 import { useComprehensiveSummary } from "@/hooks/useCosts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SUBSCRIPTION_PRICING } from "@/api/types/revenue";
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -143,8 +144,86 @@ export function BreakEvenPage() {
         )}
       </div>
 
+      {/* Subscription Tier Pricing */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Premium Tier */}
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-500 flex items-center justify-center">
+              <Crown className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">Premium</h3>
+              <p className="text-sm text-muted-foreground">VBT or Nutrition</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-3 rounded-xl bg-background/50 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Weekly</p>
+              <p className="text-lg font-bold">{formatCurrency(SUBSCRIPTION_PRICING.premium.weekly)}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-background/50 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Monthly</p>
+              <p className="text-lg font-bold">{formatCurrency(SUBSCRIPTION_PRICING.premium.monthly)}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-background/50 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Yearly</p>
+              <p className="text-lg font-bold">{formatCurrency(SUBSCRIPTION_PRICING.premium.yearly)}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Elite Tier */}
+        <div className="glass rounded-2xl p-6 border border-primary/30">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-primary glow-orange text-primary-foreground flex items-center justify-center">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">Elite</h3>
+              <p className="text-sm text-muted-foreground">AI Coach + Everything</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-3">
+            <div className="p-3 rounded-xl bg-background/50 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Weekly</p>
+              <p className="text-lg font-bold">{formatCurrency(SUBSCRIPTION_PRICING.elite.weekly)}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-background/50 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Monthly</p>
+              <p className="text-lg font-bold">{formatCurrency(SUBSCRIPTION_PRICING.elite.monthly)}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-background/50 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Yearly</p>
+              <p className="text-lg font-bold">{formatCurrency(SUBSCRIPTION_PRICING.elite.yearly)}</p>
+            </div>
+            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Titan</p>
+              <p className="text-lg font-bold text-primary">{formatCurrency(SUBSCRIPTION_PRICING.elite.titanLifetime || 0)}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Subscription Targets */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
+        <div className="glass rounded-2xl p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-purple-500/20 text-purple-500">
+              <Users className="w-5 h-5" />
+            </div>
+            <p className="font-medium">Weekly Subs Needed</p>
+          </div>
+          {isLoading ? (
+            <Skeleton className="h-10 w-20" />
+          ) : (
+            <p className="text-3xl font-bold">{Math.ceil(breakEven?.weekly_subs_needed || 0)}</p>
+          )}
+          <p className="text-sm text-muted-foreground mt-1">
+            at {formatCurrency(breakEven?.weekly_net_price || 0)}/wk net
+          </p>
+        </div>
+
         <div className="glass rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/20 text-blue-500">
@@ -192,7 +271,7 @@ export function BreakEvenPage() {
             <p className="text-3xl font-bold">{Math.ceil(breakEven?.mixed_subs_needed || 0)}</p>
           )}
           <p className="text-sm text-muted-foreground mt-1">
-            {formatPercent(breakEven?.monthly_to_yearly_ratio || 0)} monthly ratio
+            blended pricing model
           </p>
         </div>
       </div>
@@ -211,6 +290,14 @@ export function BreakEvenPage() {
           </div>
 
           <div className="space-y-4">
+            <div className="flex justify-between items-center p-3 rounded-xl bg-background/50">
+              <span className="text-muted-foreground">Weekly LTV</span>
+              {isLoading ? (
+                <Skeleton className="h-6 w-20" />
+              ) : (
+                <span className="font-bold">{formatCurrency(breakEven?.weekly_ltv || 0)}</span>
+              )}
+            </div>
             <div className="flex justify-between items-center p-3 rounded-xl bg-background/50">
               <span className="text-muted-foreground">Monthly LTV</span>
               {isLoading ? (
@@ -290,7 +377,17 @@ export function BreakEvenPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-5">
+          <div className="p-4 rounded-xl bg-background/50 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Weekly Churn</p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16 mx-auto" />
+            ) : (
+              <p className="text-2xl font-bold text-destructive">
+                {formatPercent(breakEven?.weekly_churn_rate || 0)}
+              </p>
+            )}
+          </div>
           <div className="p-4 rounded-xl bg-background/50 text-center">
             <p className="text-sm text-muted-foreground mb-1">Monthly Churn</p>
             {isLoading ? (
@@ -312,22 +409,22 @@ export function BreakEvenPage() {
             )}
           </div>
           <div className="p-4 rounded-xl bg-background/50 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Avg Weekly Lifetime</p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16 mx-auto" />
+            ) : (
+              <p className="text-2xl font-bold">
+                {(breakEven?.avg_weekly_lifetime || 0).toFixed(1)} wk
+              </p>
+            )}
+          </div>
+          <div className="p-4 rounded-xl bg-background/50 text-center">
             <p className="text-sm text-muted-foreground mb-1">Avg Monthly Lifetime</p>
             {isLoading ? (
               <Skeleton className="h-8 w-16 mx-auto" />
             ) : (
               <p className="text-2xl font-bold">
                 {(breakEven?.avg_monthly_lifetime || 0).toFixed(1)} mo
-              </p>
-            )}
-          </div>
-          <div className="p-4 rounded-xl bg-background/50 text-center">
-            <p className="text-sm text-muted-foreground mb-1">Avg Yearly Renewals</p>
-            {isLoading ? (
-              <Skeleton className="h-8 w-16 mx-auto" />
-            ) : (
-              <p className="text-2xl font-bold">
-                {(breakEven?.avg_yearly_renewals || 0).toFixed(1)}x
               </p>
             )}
           </div>
