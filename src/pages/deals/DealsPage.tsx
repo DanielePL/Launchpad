@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import {
   Building2,
   Plus,
@@ -55,13 +54,13 @@ export function DealsPage() {
   }, [partners]);
 
   // Group deals by stage for pipeline view
-  const dealsByStage = useMemo(() => {
+  const dealsByStage = useMemo((): Partial<Record<DealStage, EnterpriseDeal[]>> => {
     if (!deals) return {};
-    return deals.reduce((acc, deal) => {
+    return deals.reduce<Partial<Record<DealStage, EnterpriseDeal[]>>>((acc, deal) => {
       if (!acc[deal.stage]) acc[deal.stage] = [];
-      acc[deal.stage].push(deal);
+      acc[deal.stage]!.push(deal);
       return acc;
-    }, {} as Record<DealStage, EnterpriseDeal[]>);
+    }, {});
   }, [deals]);
 
   // Active pipeline stages (excluding closed)
