@@ -26,6 +26,7 @@ import {
   useUpdatePartner,
   useDeletePartner,
 } from "@/hooks/usePartners";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -365,6 +366,9 @@ export function PartnersListPage() {
   const createMutation = useCreatePartner();
   const updateMutation = useUpdatePartner();
   const deleteMutation = useDeletePartner();
+  const { hasPermission } = useAuth();
+
+  const canCreatePartners = hasPermission("partners:create");
 
   const [showForm, setShowForm] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
@@ -432,14 +436,16 @@ export function PartnersListPage() {
           <h1 className="text-3xl lg:text-4xl font-bold mb-2">Partners</h1>
           <p className="text-muted-foreground text-lg">Manage your affiliate partners</p>
         </div>
-        <Button
-          onClick={() => setShowForm(true)}
-          className="rounded-xl glow-orange"
-          disabled={showForm || !!editingPartner}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Partner
-        </Button>
+        {canCreatePartners && (
+          <Button
+            onClick={() => setShowForm(true)}
+            className="rounded-xl glow-orange"
+            disabled={showForm || !!editingPartner}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Partner
+          </Button>
+        )}
       </div>
 
       {/* Summary Cards */}
@@ -796,12 +802,16 @@ export function PartnersListPage() {
             <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
             <h3 className="text-xl font-bold mb-2">No partners yet</h3>
             <p className="text-muted-foreground mb-4">
-              Add your first affiliate partner to start tracking referrals
+              {canCreatePartners
+                ? "Add your first affiliate partner to start tracking referrals"
+                : "No affiliate partners have been added yet"}
             </p>
-            <Button onClick={() => setShowForm(true)} className="rounded-xl glow-orange">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Your First Partner
-            </Button>
+            {canCreatePartners && (
+              <Button onClick={() => setShowForm(true)} className="rounded-xl glow-orange">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Your First Partner
+              </Button>
+            )}
           </div>
         )}
       </div>

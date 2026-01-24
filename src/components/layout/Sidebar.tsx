@@ -86,12 +86,14 @@ const allNavigation: NavItem[] = [
     icon: Building2,
     href: "/employees",
     permission: "employees",
+    superAdminOnly: true,
   },
   {
     label: "Performance",
     icon: Activity,
     href: "/performance",
     permission: "performance",
+    superAdminOnly: true,
   },
   {
     label: "Users",
@@ -274,8 +276,8 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* External Portal Links - Only for CRM users */}
-        {canAccessCRM && (
+        {/* External Portal Links - For users with partners or influencers access */}
+        {(canAccessCRM || hasPermission("partners") || hasPermission("influencers")) && (
           <div className="border-t border-white/10 p-4 space-y-1">
             <a
               href="/partner"

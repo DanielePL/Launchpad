@@ -3,6 +3,7 @@ export const ADMIN_EMAILS = {
   SUPER_ADMIN: "management@prometheus.coach",
   ADMIN: "admin@prometheus.coach",
   CAMPUS: "campus@prometheus.coach",
+  PARTNER_MANAGER: "partners@prometheus.coach",
 } as const;
 
 export type AdminEmail = (typeof ADMIN_EMAILS)[keyof typeof ADMIN_EMAILS];
@@ -12,6 +13,42 @@ export const VALID_ADMIN_EMAILS: AdminEmail[] = [
   ADMIN_EMAILS.SUPER_ADMIN,
   ADMIN_EMAILS.ADMIN,
   ADMIN_EMAILS.CAMPUS,
+  ADMIN_EMAILS.PARTNER_MANAGER,
+];
+
+// Admin account credentials and metadata
+export interface AdminAccount {
+  email: AdminEmail;
+  name: string;
+  password: string;
+  role: "super_admin" | "admin" | "campus" | "partner_manager";
+}
+
+export const ADMIN_ACCOUNTS: AdminAccount[] = [
+  {
+    email: ADMIN_EMAILS.SUPER_ADMIN,
+    name: "Daniele",
+    password: "Ichiban_11",
+    role: "super_admin",
+  },
+  {
+    email: ADMIN_EMAILS.ADMIN,
+    name: "Karin",
+    password: "karin2026",
+    role: "admin",
+  },
+  {
+    email: ADMIN_EMAILS.CAMPUS,
+    name: "Sjoerd",
+    password: "sjoerd2026",
+    role: "campus",
+  },
+  {
+    email: ADMIN_EMAILS.PARTNER_MANAGER,
+    name: "Valerie",
+    password: "valerie2026",
+    role: "partner_manager",
+  },
 ];
 
 // Standard permissions (areas in the admin portal)
@@ -27,6 +64,7 @@ export type Permission =
   | "analytics:trends"
   | "partners"
   | "partners:payouts"
+  | "partners:create"
   | "employees"
   | "performance"
   | "users"
@@ -35,6 +73,25 @@ export type Permission =
   | "sales:crm"
   | "influencers"
   | "settings";
+
+// Predefined permissions for each role
+export const ROLE_PERMISSIONS: Record<AdminAccount["role"], Permission[]> = {
+  super_admin: [
+    "dashboard", "costs", "revenue", "analytics", "partners", "partners:create",
+    "employees", "performance", "users", "sales", "influencers", "settings",
+  ],
+  admin: [
+    "dashboard", "costs", "revenue", "analytics", "partners",
+    "users", "sales", "influencers", "settings",
+  ],
+  campus: [
+    "dashboard", "costs", "revenue", "analytics", "partners",
+    "users", "sales", "influencers", "settings",
+  ],
+  partner_manager: [
+    "partners", "influencers",
+  ],
+};
 
 // Sensitive permissions (compensation data)
 export type SensitivePermission =
@@ -70,9 +127,10 @@ export const PERMISSION_CONFIG: PermissionConfig[] = [
   {
     id: "partners",
     label: "Partners",
-    children: ["partners:payouts"],
+    children: ["partners:payouts", "partners:create"],
   },
   { id: "partners:payouts", label: "Payouts" },
+  { id: "partners:create", label: "Create Partners" },
   { id: "employees", label: "Employees" },
   { id: "performance", label: "Performance" },
   { id: "users", label: "Users" },

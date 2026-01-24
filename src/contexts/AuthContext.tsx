@@ -4,18 +4,25 @@ import {
   type Permission,
   type SensitivePermission,
   type AdminPermissions,
+  type AdminAccount,
   ADMIN_EMAILS,
+  ADMIN_ACCOUNTS,
+  ROLE_PERMISSIONS,
   isValidAdminEmail,
   isSuperAdmin as checkIsSuperAdmin,
   hasPermission as checkHasPermission,
   hasSensitivePermission as checkHasSensitivePermission,
 } from "@/api/types/permissions";
 
-// Storage key for permissions
+// Storage keys
+const AUTH_STORAGE_KEY = "admin_auth";
 const PERMISSIONS_STORAGE_KEY = "admin_permissions";
 
-// Default permissions for new accounts
-const DEFAULT_PERMISSIONS: Permission[] = ["dashboard"];
+interface StoredAuth {
+  email: string;
+  name: string;
+  role: AdminAccount["role"];
+}
 
 interface AuthContextType {
   user: User | null;
@@ -41,11 +48,34 @@ interface AuthContextType {
   updateAdminPermissions: (email: string, permissions: Permission[], sensitivePermissions: SensitivePermission[]) => void;
 
   hasRole: (role: UserRole | UserRole[]) => boolean;
-  login: (email: string, userId: string) => Promise<void>;
-  logout: () => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Load stored auth from localStorage
+function loadStoredAuth(): StoredAuth | null {
+  try {
+    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error("Failed to load auth:", e);
+  }
+  return null;
+}
+
+// Save auth to localStorage
+function saveStoredAuth(auth: StoredAuth): void {
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+}
+
+// Clear auth from localStorage
+function clearStoredAuth(): void {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+}
 
 // Load permissions from localStorage
 function loadStoredPermissions(): Record<string, AdminPermissions> {
@@ -57,27 +87,7 @@ function loadStoredPermissions(): Record<string, AdminPermissions> {
   } catch (e) {
     console.error("Failed to load permissions:", e);
   }
-
-  // Initialize with default permissions for admin and campus
-  const defaults: Record<string, AdminPermissions> = {
-    [ADMIN_EMAILS.ADMIN]: {
-      email: ADMIN_EMAILS.ADMIN,
-      permissions: [...DEFAULT_PERMISSIONS],
-      sensitive_permissions: [],
-      updated_at: new Date().toISOString(),
-      updated_by: ADMIN_EMAILS.SUPER_ADMIN,
-    },
-    [ADMIN_EMAILS.CAMPUS]: {
-      email: ADMIN_EMAILS.CAMPUS,
-      permissions: [...DEFAULT_PERMISSIONS],
-      sensitive_permissions: [],
-      updated_at: new Date().toISOString(),
-      updated_by: ADMIN_EMAILS.SUPER_ADMIN,
-    },
-  };
-
-  localStorage.setItem(PERMISSIONS_STORAGE_KEY, JSON.stringify(defaults));
-  return defaults;
+  return {};
 }
 
 // Save permissions to localStorage
@@ -86,33 +96,37 @@ function saveStoredPermissions(permissions: Record<string, AdminPermissions>): v
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // For now, simulate login with management email (super admin)
-  // In production, this would come from actual authentication
-  const [user] = useState<User | null>({
-    id: "admin",
-    email: ADMIN_EMAILS.SUPER_ADMIN, // Change this to test different accounts
-    role: "admin",
-    name: "Management",
-  });
-  const [token] = useState<string | null>("prometheus_admin_2024");
-  const [isLoading] = useState(false);
-
-  // Permission state
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [storedPermissions, setStoredPermissions] = useState<Record<string, AdminPermissions>>({});
 
-  // Load permissions on mount
+  // Load auth on mount
   useEffect(() => {
+    const storedAuth = loadStoredAuth();
+    if (storedAuth) {
+      setUser({
+        id: storedAuth.email,
+        email: storedAuth.email,
+        role: "admin",
+        name: storedAuth.name,
+      });
+      setToken("prometheus_admin_token");
+    }
     setStoredPermissions(loadStoredPermissions());
+    setIsLoading(false);
   }, []);
 
   // Get current user's permissions
   const userEmail = user?.email || "";
   const userIsSuperAdmin = checkIsSuperAdmin(userEmail);
 
-  // Super admin has all permissions, others get from storage
-  const permissions: Permission[] = userIsSuperAdmin
-    ? ["dashboard", "costs", "revenue", "analytics", "partners", "employees", "performance", "users", "sales", "influencers", "settings"]
-    : (storedPermissions[userEmail]?.permissions || DEFAULT_PERMISSIONS);
+  // Find account for current user
+  const currentAccount = ADMIN_ACCOUNTS.find(acc => acc.email === userEmail);
+  const accountRole = currentAccount?.role || "admin";
+
+  // Get permissions based on role
+  const permissions: Permission[] = ROLE_PERMISSIONS[accountRole] || [];
 
   const sensitivePermissions: SensitivePermission[] = userIsSuperAdmin
     ? ["compensation:view", "compensation:edit"]
@@ -135,31 +149,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Get all admin permissions (for settings page)
   const getAllAdminPermissions = (): AdminPermissions[] => {
-    return [
-      // Super admin - always full access
-      {
-        email: ADMIN_EMAILS.SUPER_ADMIN,
-        permissions: ["dashboard", "costs", "revenue", "analytics", "partners", "employees", "performance", "users", "sales", "influencers", "settings"],
-        sensitive_permissions: ["compensation:view", "compensation:edit"],
-        updated_at: "",
-        updated_by: "",
-      },
-      // Other admins from storage
-      storedPermissions[ADMIN_EMAILS.ADMIN] || {
-        email: ADMIN_EMAILS.ADMIN,
-        permissions: DEFAULT_PERMISSIONS,
-        sensitive_permissions: [],
-        updated_at: new Date().toISOString(),
-        updated_by: ADMIN_EMAILS.SUPER_ADMIN,
-      },
-      storedPermissions[ADMIN_EMAILS.CAMPUS] || {
-        email: ADMIN_EMAILS.CAMPUS,
-        permissions: DEFAULT_PERMISSIONS,
-        sensitive_permissions: [],
-        updated_at: new Date().toISOString(),
-        updated_by: ADMIN_EMAILS.SUPER_ADMIN,
-      },
-    ];
+    return ADMIN_ACCOUNTS.map(account => ({
+      email: account.email,
+      permissions: ROLE_PERMISSIONS[account.role],
+      sensitive_permissions: account.role === "super_admin"
+        ? ["compensation:view", "compensation:edit"] as SensitivePermission[]
+        : [],
+      updated_at: "",
+      updated_by: "",
+    }));
   };
 
   // Update admin permissions (super admin only)
@@ -179,7 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const updated: AdminPermissions = {
-      email: email as typeof ADMIN_EMAILS.ADMIN | typeof ADMIN_EMAILS.CAMPUS,
+      email: email as typeof ADMIN_EMAILS.ADMIN,
       permissions: newPermissions,
       sensitive_permissions: newSensitivePermissions,
       updated_at: new Date().toISOString(),
@@ -195,12 +193,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     saveStoredPermissions(newStoredPermissions);
   };
 
-  const login = async () => {
-    // Auth disabled - do nothing
+  const login = async (email: string, password: string): Promise<boolean> => {
+    // Find account by email
+    const account = ADMIN_ACCOUNTS.find(acc => acc.email === email);
+
+    if (!account) {
+      return false;
+    }
+
+    // Verify password
+    if (account.password !== password) {
+      return false;
+    }
+
+    // Set user state
+    setUser({
+      id: account.email,
+      email: account.email,
+      role: "admin",
+      name: account.name,
+    });
+    setToken("prometheus_admin_token");
+
+    // Save to localStorage
+    saveStoredAuth({
+      email: account.email,
+      name: account.name,
+      role: account.role,
+    });
+
+    return true;
   };
 
-  const logout = async () => {
-    // Auth disabled - do nothing
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    clearStoredAuth();
   };
 
   const isAdmin = user?.role === "admin";

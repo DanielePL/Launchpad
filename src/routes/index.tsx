@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { PartnerProtectedRoute } from "./PartnerProtectedRoute";
@@ -7,6 +7,9 @@ import { InfluencerPortalProtectedRoute } from "./InfluencerPortalProtectedRoute
 import { PermissionGuard } from "./RoleGuard";
 import { PartnerLayout } from "@/components/partner-portal/PartnerLayout";
 import { InfluencerLayout } from "@/components/influencer-portal/InfluencerLayout";
+
+// Auth Pages
+import { LoginPage } from "@/pages/auth/LoginPage";
 
 // Admin Pages
 import { DashboardPage } from "@/pages/dashboard/DashboardPage";
@@ -46,7 +49,7 @@ import InfluencerSettings from "@/pages/influencer-portal/InfluencerSettings";
 export const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Navigate to="/" replace />,
+    element: <LoginPage />,
   },
   {
     path: "/",
@@ -56,7 +59,14 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
+      {
+        index: true,
+        element: (
+          <PermissionGuard permission="dashboard">
+            <DashboardPage />
+          </PermissionGuard>
+        ),
+      },
 
       // Costs
       { path: "costs", element: <CostsOverviewPage /> },
@@ -76,11 +86,25 @@ export const router = createBrowserRouter([
       { path: "partners/:id", element: <PartnerDetailPage /> },
       { path: "payouts", element: <PayoutsPage /> },
 
-      // Employees
-      { path: "employees", element: <EmployeesPage /> },
+      // Employees (Super Admin only)
+      {
+        path: "employees",
+        element: (
+          <PermissionGuard permission="employees" superAdminOnly>
+            <EmployeesPage />
+          </PermissionGuard>
+        ),
+      },
 
-      // Performance
-      { path: "performance", element: <PerformanceDashboard /> },
+      // Performance (Super Admin only)
+      {
+        path: "performance",
+        element: (
+          <PermissionGuard permission="performance" superAdminOnly>
+            <PerformanceDashboard />
+          </PermissionGuard>
+        ),
+      },
 
       // Beta Management
       { path: "beta", element: <BetaManagementPage /> },

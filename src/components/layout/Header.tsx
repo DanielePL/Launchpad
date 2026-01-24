@@ -26,8 +26,11 @@ export function Header() {
         {/* User Info */}
         {user && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button variant="ghost" size="icon" onClick={logout}>
+            <div className="text-right">
+              <p className="text-sm font-medium">{user.name}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
+            </div>
+            <Button variant="ghost" size="icon" onClick={logout} title="Logout">
               <LogOut className="h-5 w-5" />
               <span className="sr-only">Logout</span>
             </Button>
