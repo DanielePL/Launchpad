@@ -1,24 +1,31 @@
 import { useState } from "react";
-import { X, FileText, Download, Loader2, Flame, Sparkles } from "lucide-react";
+import { X, FileText, Download, Loader2, Flame, Sparkles, Cloud, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { downloadContractPdf, type ContractData } from "./ContractPdfGenerator";
+import { generateContractPdf, downloadContractPdf, type ContractData } from "./ContractPdfGenerator";
+import { uploadContractPdf } from "@/api/services/contractStorage";
 import type { Partner } from "@/api/types/partners";
 
 interface GenerateContractModalProps {
   isOpen: boolean;
   onClose: () => void;
   creators: Partner[];
-  onContractGenerated?: (creatorId: string, pdfBlob: Blob) => void;
+  onContractGenerated?: (creatorId: string, contractId: string) => void;
 }
+
+type UploadStatus = "idle" | "uploading" | "success" | "error";
 
 export function GenerateContractModal({
   isOpen,
   onClose,
   creators,
+  onContractGenerated,
 }: GenerateContractModalProps) {
   const [selectedCreatorId, setSelectedCreatorId] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedFor, setGeneratedFor] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [generatedContractId, setGeneratedContractId] = useState<string | null>(null);
 
   // Fixed commission rate - no selection
   const commissionRate = 20;
@@ -30,26 +37,55 @@ export function GenerateContractModal({
 
     setIsGenerating(true);
     setGeneratedFor(null);
+    setUploadStatus("idle");
+    setUploadError(null);
+
+    const contractId = `PCA-${Date.now().toString(36).toUpperCase()}`;
 
     try {
       const contractData: ContractData = {
-        contractId: `PCA-${Date.now().toString(36).toUpperCase()}`,
+        contractId,
         contractDate: new Date().toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",
         }),
         creatorName: selectedCreator.name,
-        creatorLegalName: selectedCreator.name, // In real app, might have separate legal name field
+        creatorLegalName: selectedCreator.name,
         creatorHandle: selectedCreator.tiktok_handle || selectedCreator.youtube_handle || `@${selectedCreator.name.toLowerCase().replace(/\s+/g, "")}`,
         creatorEmail: selectedCreator.email,
         commissionRate: commissionRate,
       };
 
+      // Generate PDF blob
+      const pdfBlob = await generateContractPdf(contractData);
+
+      // Download locally
       await downloadContractPdf(contractData);
       setGeneratedFor(selectedCreator.name);
+      setGeneratedContractId(contractId);
+
+      // Upload to Supabase Storage
+      setUploadStatus("uploading");
+
+      const uploadResult = await uploadContractPdf(
+        selectedCreator.id,
+        contractId,
+        selectedCreator.name,
+        pdfBlob
+      );
+
+      if (uploadResult.success) {
+        setUploadStatus("success");
+        onContractGenerated?.(selectedCreator.id, contractId);
+      } else {
+        setUploadStatus("error");
+        setUploadError(uploadResult.error || "Upload failed");
+      }
     } catch (error) {
       console.error("Failed to generate contract:", error);
+      setUploadStatus("error");
+      setUploadError(error instanceof Error ? error.message : "Generation failed");
     } finally {
       setIsGenerating(false);
     }
@@ -58,6 +94,9 @@ export function GenerateContractModal({
   const handleClose = () => {
     setSelectedCreatorId("");
     setGeneratedFor(null);
+    setUploadStatus("idle");
+    setUploadError(null);
+    setGeneratedContractId(null);
     onClose();
   };
 
@@ -90,16 +129,51 @@ export function GenerateContractModal({
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Success Message */}
+          {/* Success/Status Messages */}
           {generatedFor && (
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-600">
-              <FileText className="w-5 h-5" />
-              <div>
-                <p className="font-medium">Contract Generated!</p>
-                <p className="text-sm opacity-80">
-                  Downloaded contract for {generatedFor}
-                </p>
+            <div className="space-y-3">
+              {/* Download Success */}
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-600">
+                <FileText className="w-5 h-5" />
+                <div>
+                  <p className="font-medium">Contract Downloaded!</p>
+                  <p className="text-sm opacity-80">
+                    {generatedFor} • {generatedContractId}
+                  </p>
+                </div>
               </div>
+
+              {/* Upload Status */}
+              {uploadStatus === "uploading" && (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <div>
+                    <p className="font-medium">Uploading to Cloud...</p>
+                    <p className="text-sm opacity-80">Saving contract to storage</p>
+                  </div>
+                </div>
+              )}
+
+              {uploadStatus === "success" && (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+                  <Cloud className="w-5 h-5" />
+                  <div className="flex-1">
+                    <p className="font-medium">Saved to Cloud Storage</p>
+                    <p className="text-sm opacity-80">Contract is now accessible in the admin panel</p>
+                  </div>
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+              )}
+
+              {uploadStatus === "error" && (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600">
+                  <AlertCircle className="w-5 h-5" />
+                  <div>
+                    <p className="font-medium">Cloud Upload Failed</p>
+                    <p className="text-sm opacity-80">{uploadError}</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

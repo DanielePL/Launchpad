@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   FileText,
   Upload,
@@ -16,7 +17,7 @@ import {
   Shield,
   Sparkles,
 } from "lucide-react";
-import { useContracts, useCreateContract, useUploadContractPdf, useSendContractForSignature, useDeleteContract } from "@/hooks/useContracts";
+import { useContracts, useCreateContract, useUploadContractPdf, useSendContractForSignature, useDeleteContract, contractKeys } from "@/hooks/useContracts";
 import { usePartners } from "@/hooks/usePartners";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,6 +37,7 @@ const STATUS_CONFIG: Record<ContractStatus, { label: string; color: string; bg: 
 };
 
 export function ContractsPage() {
+  const queryClient = useQueryClient();
   const { data: contracts, isLoading: contractsLoading } = useContracts();
   const { data: partners, isLoading: partnersLoading } = usePartners();
   const createContractMutation = useCreateContract();
@@ -49,6 +51,11 @@ export function ContractsPage() {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [selectedCreatorId, setSelectedCreatorId] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Refresh contracts when a new one is generated
+  const handleContractGenerated = () => {
+    queryClient.invalidateQueries({ queryKey: contractKeys.all });
+  };
 
   const isLoading = contractsLoading || partnersLoading;
 
@@ -494,6 +501,7 @@ export function ContractsPage() {
         isOpen={showGenerateModal}
         onClose={() => setShowGenerateModal(false)}
         creators={partners || []}
+        onContractGenerated={handleContractGenerated}
       />
     </div>
   );

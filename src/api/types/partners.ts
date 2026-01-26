@@ -162,6 +162,8 @@ export interface Partner {
   contract_id?: string;
   contract_signed_at?: string;
   contract_status?: ContractStatus;
+  contract_pdf_url?: string;        // Supabase Storage URL
+  contract_generated_at?: string;   // When contract was generated
 
   // Product assignments - which products can this creator sell
   products?: ProductType[];
