@@ -15,6 +15,7 @@ import {
   Activity,
   FlaskConical,
   Bug,
+  Megaphone,
   type LucideIcon,
 } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -80,6 +81,7 @@ const allNavigation: NavItem[] = [
       { label: "Contracts", href: "/contracts" },
       { label: "Payouts", href: "/payouts" },
       { label: "Outreach", href: "/influencers", permission: "influencers" },
+      { label: "Ambassadors", href: "/ambassadors", permission: "ambassadors" },
       { label: "Demo Wizard", href: "/sales/demo", permission: "sales" },
       { label: "Pipeline / CRM", href: "/sales/crm", permission: "sales" },
     ],

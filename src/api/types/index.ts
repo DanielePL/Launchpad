@@ -8,3 +8,4 @@ export * from "./auth";
 export * from "./sales";
 export * from "./beta";
 export * from "./crashes";
+export * from "./ambassadors";

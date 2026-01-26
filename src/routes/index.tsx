@@ -31,6 +31,7 @@ import { BetaManagementPage } from "@/pages/beta/BetaManagementPage";
 import { CrashesPage } from "@/pages/crashes/CrashesPage";
 import { ContractsPage } from "@/pages/contracts/ContractsPage";
 import { DealsPage } from "@/pages/deals/DealsPage";
+import { AmbassadorControlPage } from "@/pages/ambassadors/AmbassadorControlPage";
 
 // Creator Portal Pages
 import CreatorLogin from "@/pages/creator-portal/CreatorLogin";
@@ -80,6 +81,16 @@ export const router = createBrowserRouter([
       { path: "payouts", element: <PayoutsPage /> },
       { path: "contracts", element: <ContractsPage /> },
       { path: "deals", element: <DealsPage /> },
+
+      // Ambassadors
+      {
+        path: "ambassadors",
+        element: (
+          <PermissionGuard permission="ambassadors">
+            <AmbassadorControlPage />
+          </PermissionGuard>
+        ),
+      },
 
       // Employees (Super Admin only)
       {

@@ -72,24 +72,25 @@ export type Permission =
   | "sales:demo"
   | "sales:crm"
   | "influencers"
+  | "ambassadors"
   | "settings";
 
 // Predefined permissions for each role
 export const ROLE_PERMISSIONS: Record<AdminAccount["role"], Permission[]> = {
   super_admin: [
     "dashboard", "costs", "revenue", "analytics", "partners", "partners:create",
-    "employees", "performance", "users", "sales", "influencers", "settings",
+    "employees", "performance", "users", "sales", "influencers", "ambassadors", "settings",
   ],
   admin: [
     "dashboard", "costs", "revenue", "analytics", "partners",
-    "users", "sales", "influencers", "settings",
+    "users", "sales", "influencers", "ambassadors", "settings",
   ],
   campus: [
     "dashboard", "costs", "revenue", "analytics", "partners",
-    "users", "sales", "influencers", "settings",
+    "users", "sales", "influencers", "ambassadors", "settings",
   ],
   partner_manager: [
-    "partners", "influencers",
+    "partners", "influencers", "ambassadors",
   ],
 };
 
@@ -142,6 +143,7 @@ export const PERMISSION_CONFIG: PermissionConfig[] = [
   { id: "sales:demo", label: "Demo Wizard" },
   { id: "sales:crm", label: "Pipeline / CRM" },
   { id: "influencers", label: "Influencers" },
+  { id: "ambassadors", label: "Ambassadors" },
   { id: "settings", label: "Settings" },
 ];
 
