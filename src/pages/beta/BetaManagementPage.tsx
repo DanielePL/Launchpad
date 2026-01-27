@@ -1,6 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
-  Users,
   Apple,
   Smartphone,
   Search,
@@ -14,19 +13,34 @@ import {
   ChevronDown,
   ChevronUp,
   Filter,
+  Plus,
+  X,
+  Mail,
+  Trash2,
+  Send,
+  UserCheck,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useBetaOverview,
+  useBetaTesters,
   useBetaFeedback,
   useIosBetaFeedback,
   useUpdateBetaFeedback,
   useUpdateIosBetaFeedback,
+  useCreateBetaTester,
+  useDeleteBetaTester,
+  useInviteBetaTester,
+  useActivateBetaTester,
 } from "@/hooks/useBeta";
 import type {
+  BetaTester,
+  BetaTesterCreate,
   BetaTesterFilters,
+  BetaTesterStatus,
   BetaFeedback,
   BetaFeedbackFilters,
   BetaPlatform,
@@ -68,25 +82,29 @@ const feedbackTypeColors = {
   idea: { bg: "bg-yellow-500/20", text: "text-yellow-500" },
 };
 
+const testerStatusColors: Record<BetaTesterStatus, { bg: string; text: string }> = {
+  pending: { bg: "bg-yellow-500/20", text: "text-yellow-500" },
+  invited: { bg: "bg-blue-500/20", text: "text-blue-500" },
+  active: { bg: "bg-green-500/20", text: "text-green-500" },
+  inactive: { bg: "bg-muted", text: "text-muted-foreground" },
+};
+
 // =====================================================
-// Extracted Tester Row Component
+// Tester Row Component (from beta_testers table)
 // =====================================================
 
-interface ExtractedTesterRowProps {
-  tester: {
-    id: string;
-    name: string;
-    platform: BetaPlatform;
-    device_info?: string;
-    app_version?: string;
-    feedback_count: number;
-    last_feedback: string;
-  };
+interface TesterRowProps {
+  tester: BetaTester;
+  onInvite: (id: string) => void;
+  onActivate: (id: string) => void;
+  onDelete: (id: string) => void;
+  isActioning: boolean;
 }
 
-function ExtractedTesterRow({ tester }: ExtractedTesterRowProps) {
+function TesterRow({ tester, onInvite, onActivate, onDelete, isActioning }: TesterRowProps) {
   const PlatformIcon = platformIcons[tester.platform];
   const platformStyle = platformColors[tester.platform];
+  const statusStyle = testerStatusColors[tester.status];
 
   return (
     <div className="glass rounded-2xl p-4 transition-smooth hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.1)]">
@@ -98,22 +116,222 @@ function ExtractedTesterRow({ tester }: ExtractedTesterRowProps) {
           <div className="flex-1 min-w-0">
             <p className="font-bold truncate">{tester.name}</p>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              {tester.device_info && <span className="truncate">{tester.device_info}</span>}
-              {tester.app_version && <span>v{tester.app_version}</span>}
+              <span className="flex items-center gap-1 truncate">
+                <Mail className="w-3 h-3" />
+                {tester.email}
+              </span>
+              {tester.device_model && <span className="truncate">{tester.device_model}</span>}
+              {tester.os_version && <span>OS {tester.os_version}</span>}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-sm font-medium">{tester.feedback_count} feedback</p>
-            <p className="text-xs text-muted-foreground">
-              Last: {format(parseISO(tester.last_feedback), "MMM d, yyyy")}
+        <div className="flex items-center gap-2">
+          <div className="text-right mr-2">
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+              {tester.status}
+            </span>
+            <p className="text-xs text-muted-foreground mt-1">
+              {format(parseISO(tester.created_at), "MMM d, yyyy")}
             </p>
           </div>
-          <span className={`px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-500`}>
-            active
-          </span>
+
+          {tester.status === "pending" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl text-xs"
+              onClick={() => onInvite(tester.id)}
+              disabled={isActioning}
+            >
+              <Send className="w-3 h-3 mr-1" />
+              Invite
+            </Button>
+          )}
+          {tester.status === "invited" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl text-xs"
+              onClick={() => onActivate(tester.id)}
+              disabled={isActioning}
+            >
+              <UserCheck className="w-3 h-3 mr-1" />
+              Activate
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-xl text-muted-foreground hover:text-destructive"
+            onClick={() => onDelete(tester.id)}
+            disabled={isActioning}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =====================================================
+// Add Tester Modal
+// =====================================================
+
+interface AddTesterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  defaultPlatform: BetaPlatform;
+}
+
+function AddTesterModal({ isOpen, onClose, defaultPlatform }: AddTesterModalProps) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [platform, setPlatform] = useState<BetaPlatform>(defaultPlatform);
+  const [notes, setNotes] = useState("");
+
+  const createTester = useCreateBetaTester();
+
+  const handleSubmit = () => {
+    if (!name.trim() || !email.trim()) return;
+
+    const testerData: BetaTesterCreate = {
+      name: name.trim(),
+      email: email.trim(),
+      platform,
+      notes: notes.trim() || undefined,
+    };
+
+    createTester.mutate(testerData, {
+      onSuccess: () => {
+        toast.success(`Tester "${name}" added`);
+        handleClose();
+      },
+      onError: (error) => {
+        toast.error(error instanceof Error ? error.message : "Failed to add tester");
+      },
+    });
+  };
+
+  const handleClose = () => {
+    setName("");
+    setEmail("");
+    setPlatform(defaultPlatform);
+    setNotes("");
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-background/90 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="bg-card rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-primary/10">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-primary/10 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center shadow-lg shadow-primary/25">
+              <Plus className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">Add Beta Tester</h3>
+              <p className="text-sm text-muted-foreground">
+                Add a new tester to the {platform === "ios" ? "iOS" : "Android"} beta list
+              </p>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" className="rounded-xl" onClick={handleClose}>
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {/* Name */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Name *</label>
+            <Input
+              placeholder="Full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="rounded-xl"
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Email *</label>
+            <Input
+              type="email"
+              placeholder="tester@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="rounded-xl"
+            />
+          </div>
+
+          {/* Platform */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Platform</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPlatform("android")}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-smooth border ${
+                  platform === "android"
+                    ? "bg-green-500/20 text-green-500 border-green-500/30"
+                    : "border-border text-muted-foreground hover:text-foreground hover:bg-background/50"
+                }`}
+              >
+                <Smartphone className="w-4 h-4" />
+                Android
+              </button>
+              <button
+                onClick={() => setPlatform("ios")}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-smooth border ${
+                  platform === "ios"
+                    ? "bg-blue-500/20 text-blue-500 border-blue-500/30"
+                    : "border-border text-muted-foreground hover:text-foreground hover:bg-background/50"
+                }`}
+              >
+                <Apple className="w-4 h-4" />
+                iOS
+              </button>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Notes</label>
+            <Input
+              placeholder="Optional notes..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="rounded-xl"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-muted/20">
+            <Button variant="ghost" className="rounded-xl" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!name.trim() || !email.trim() || createTester.isPending}
+              className="rounded-xl bg-gradient-to-r from-primary to-orange-600 hover:from-primary/90 hover:to-orange-600/90 shadow-lg shadow-primary/25"
+            >
+              {createTester.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Tester
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -221,19 +439,24 @@ function FeedbackRow({ feedback, onUpdateStatus, expanded, onToggle }: FeedbackR
 // Main Page Component
 // =====================================================
 
-type TabType = "testers" | "android-feedback" | "ios-feedback";
+type TabType = "android-testers" | "ios-testers" | "android-feedback" | "ios-feedback";
 
 export function BetaManagementPage() {
-  const [activeTab, setActiveTab] = useState<TabType>("testers");
+  const [activeTab, setActiveTab] = useState<TabType>("android-testers");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Filters
   const [testerFilters, setTesterFilters] = useState<BetaTesterFilters>({});
   const [feedbackFilters, setFeedbackFilters] = useState<BetaFeedbackFilters>({});
 
-  // Queries
+  // Tester queries
+  const { data: androidTesters, isLoading: androidTestersLoading } = useBetaTesters({ platform: "android" });
+  const { data: iosTesters, isLoading: iosTestersLoading } = useBetaTesters({ platform: "ios" });
+
+  // Feedback queries
   const { data: overview, isLoading: overviewLoading } = useBetaOverview();
   const { data: androidFeedback, isLoading: androidLoading } = useBetaFeedback(feedbackFilters);
   const { data: iosFeedback, isLoading: iosLoading } = useIosBetaFeedback(feedbackFilters);
@@ -241,6 +464,11 @@ export function BetaManagementPage() {
   // Mutations
   const updateAndroidFeedback = useUpdateBetaFeedback();
   const updateIosFeedback = useUpdateIosBetaFeedback();
+  const deleteTester = useDeleteBetaTester();
+  const inviteTester = useInviteBetaTester();
+  const activateTester = useActivateBetaTester();
+
+  const isActioning = deleteTester.isPending || inviteTester.isPending || activateTester.isPending;
 
   // Handlers
   const handleUpdateAndroidFeedback = (id: string, status: BetaFeedbackStatus) => {
@@ -263,6 +491,27 @@ export function BetaManagementPage() {
     );
   };
 
+  const handleInvite = (id: string) => {
+    inviteTester.mutate(id, {
+      onSuccess: () => toast.success("Tester invited"),
+      onError: () => toast.error("Failed to invite tester"),
+    });
+  };
+
+  const handleActivate = (id: string) => {
+    activateTester.mutate(id, {
+      onSuccess: () => toast.success("Tester activated"),
+      onError: () => toast.error("Failed to activate tester"),
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    deleteTester.mutate(id, {
+      onSuccess: () => toast.success("Tester removed"),
+      onError: () => toast.error("Failed to remove tester"),
+    });
+  };
+
   // Filter feedback by search
   const filteredAndroidFeedback = androidFeedback?.filter(
     (f) =>
@@ -276,88 +525,25 @@ export function BetaManagementPage() {
       f.screen_name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
-  // Extract unique testers from feedback data
-  interface ExtractedTester {
-    id: string;
-    name: string;
-    platform: BetaPlatform;
-    device_info?: string;
-    app_version?: string;
-    feedback_count: number;
-    last_feedback: string;
-  }
-
-  const extractedTesters = useMemo(() => {
-    const testerMap = new Map<string, ExtractedTester>();
-
-    // Process Android feedback
-    androidFeedback?.forEach((f) => {
-      const key = f.user_id || f.username;
-      if (!key) return;
-
-      const existing = testerMap.get(`android-${key}`);
-      if (existing) {
-        existing.feedback_count++;
-        if (f.created_at > existing.last_feedback) {
-          existing.last_feedback = f.created_at;
-          if (f.device_info) existing.device_info = f.device_info;
-          if (f.app_version) existing.app_version = f.app_version;
-        }
-      } else {
-        testerMap.set(`android-${key}`, {
-          id: `android-${key}`,
-          name: f.username || f.user_id || "Unknown",
-          platform: "android",
-          device_info: f.device_info,
-          app_version: f.app_version,
-          feedback_count: 1,
-          last_feedback: f.created_at,
-        });
-      }
-    });
-
-    // Process iOS feedback
-    iosFeedback?.forEach((f) => {
-      const key = f.user_id || f.username;
-      if (!key) return;
-
-      const existing = testerMap.get(`ios-${key}`);
-      if (existing) {
-        existing.feedback_count++;
-        if (f.created_at > existing.last_feedback) {
-          existing.last_feedback = f.created_at;
-          if (f.device_info) existing.device_info = f.device_info;
-          if (f.app_version) existing.app_version = f.app_version;
-        }
-      } else {
-        testerMap.set(`ios-${key}`, {
-          id: `ios-${key}`,
-          name: f.username || f.user_id || "Unknown",
-          platform: "ios",
-          device_info: f.device_info,
-          app_version: f.app_version,
-          feedback_count: 1,
-          last_feedback: f.created_at,
-        });
-      }
-    });
-
-    return Array.from(testerMap.values()).sort((a, b) =>
-      b.last_feedback.localeCompare(a.last_feedback)
-    );
-  }, [androidFeedback, iosFeedback]);
-
-  // Count unique testers
-  const uniqueAndroidTesters = extractedTesters.filter(t => t.platform === "android").length;
-  const uniqueIosTesters = extractedTesters.filter(t => t.platform === "ios").length;
-
-  // Filter extracted testers by search and platform
-  const filteredTesters = extractedTesters.filter((t) => {
-    const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.device_info?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
-    const matchesPlatform = !testerFilters.platform || t.platform === testerFilters.platform;
-    return matchesSearch && matchesPlatform;
+  // Filter testers by search and status
+  const filteredAndroidTesters = (androidTesters || []).filter((t) => {
+    const matchesSearch =
+      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = !testerFilters.status || t.status === testerFilters.status;
+    return matchesSearch && matchesStatus;
   });
+
+  const filteredIosTesters = (iosTesters || []).filter((t) => {
+    const matchesSearch =
+      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = !testerFilters.status || t.status === testerFilters.status;
+    return matchesSearch && matchesStatus;
+  });
+
+  const isTesterTab = activeTab === "android-testers" || activeTab === "ios-testers";
+  const defaultPlatform: BetaPlatform = activeTab === "ios-testers" ? "ios" : "android";
 
   return (
     <div className="space-y-6">
@@ -366,26 +552,19 @@ export function BetaManagementPage() {
           <h1 className="text-3xl lg:text-4xl font-bold mb-2">Beta Management</h1>
           <p className="text-muted-foreground text-lg">Manage beta testers and feedback</p>
         </div>
+        {isTesterTab && (
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="rounded-xl bg-gradient-to-r from-primary to-orange-600 hover:from-primary/90 hover:to-orange-600/90 shadow-lg shadow-primary/25"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Tester
+          </Button>
+        )}
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="glass rounded-2xl p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/20 text-blue-500">
-              <Apple className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">iOS Testers</p>
-              {iosLoading ? (
-                <Skeleton className="h-7 w-12 mt-1" />
-              ) : (
-                <p className="text-xl font-bold">{uniqueIosTesters} <span className="text-sm font-normal text-muted-foreground">active</span></p>
-              )}
-            </div>
-          </div>
-        </div>
-
         <div className="glass rounded-2xl p-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-green-500/20 text-green-500">
@@ -393,10 +572,26 @@ export function BetaManagementPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Android Testers</p>
-              {androidLoading ? (
+              {androidTestersLoading ? (
                 <Skeleton className="h-7 w-12 mt-1" />
               ) : (
-                <p className="text-xl font-bold">{uniqueAndroidTesters} <span className="text-sm font-normal text-muted-foreground">active</span></p>
+                <p className="text-xl font-bold">{androidTesters?.length || 0}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="glass rounded-2xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/20 text-blue-500">
+              <Apple className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">iOS Testers</p>
+              {iosTestersLoading ? (
+                <Skeleton className="h-7 w-12 mt-1" />
+              ) : (
+                <p className="text-xl font-bold">{iosTesters?.length || 0}</p>
               )}
             </div>
           </div>
@@ -440,15 +635,24 @@ export function BetaManagementPage() {
       </div>
 
       {/* Tabs */}
-      <div className="glass rounded-2xl p-1 inline-flex">
+      <div className="glass rounded-2xl p-1 inline-flex flex-wrap">
         <button
-          onClick={() => setActiveTab("testers")}
+          onClick={() => setActiveTab("android-testers")}
           className={`px-4 py-2 rounded-xl text-sm font-medium transition-smooth ${
-            activeTab === "testers" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            activeTab === "android-testers" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Users className="w-4 h-4 inline mr-2" />
-          Testers ({extractedTesters.length})
+          <Smartphone className="w-4 h-4 inline mr-2" />
+          Android Testers ({androidTesters?.length || 0})
+        </button>
+        <button
+          onClick={() => setActiveTab("ios-testers")}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-smooth ${
+            activeTab === "ios-testers" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Apple className="w-4 h-4 inline mr-2" />
+          iOS Testers ({iosTesters?.length || 0})
         </button>
         <button
           onClick={() => setActiveTab("android-feedback")}
@@ -457,7 +661,7 @@ export function BetaManagementPage() {
           }`}
         >
           <Smartphone className="w-4 h-4 inline mr-2" />
-          Android ({androidFeedback?.length || 0})
+          Android Feedback ({androidFeedback?.length || 0})
         </button>
         <button
           onClick={() => setActiveTab("ios-feedback")}
@@ -466,7 +670,7 @@ export function BetaManagementPage() {
           }`}
         >
           <Apple className="w-4 h-4 inline mr-2" />
-          iOS ({iosFeedback?.length || 0})
+          iOS Feedback ({iosFeedback?.length || 0})
         </button>
       </div>
 
@@ -476,7 +680,7 @@ export function BetaManagementPage() {
           <div className="flex-1 min-w-64 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder={activeTab === "testers" ? "Search by name or email..." : "Search feedback..."}
+              placeholder={isTesterTab ? "Search by name or email..." : "Search feedback..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 rounded-xl"
@@ -493,24 +697,26 @@ export function BetaManagementPage() {
           </Button>
         </div>
 
-        {showFilters && activeTab === "testers" && (
+        {showFilters && isTesterTab && (
           <div className="mt-4 pt-4 border-t border-border">
             <div className="space-y-2 max-w-xs">
-              <label className="text-sm font-medium">Platform</label>
+              <label className="text-sm font-medium">Status</label>
               <select
-                value={testerFilters.platform || ""}
-                onChange={(e) => setTesterFilters({ ...testerFilters, platform: e.target.value as BetaPlatform || undefined })}
+                value={testerFilters.status || ""}
+                onChange={(e) => setTesterFilters({ ...testerFilters, status: e.target.value as BetaTesterStatus || undefined })}
                 className="w-full h-10 px-3 rounded-xl bg-background border border-input"
               >
-                <option value="">All Platforms</option>
-                <option value="ios">iOS</option>
-                <option value="android">Android</option>
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="invited">Invited</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
               </select>
             </div>
           </div>
         )}
 
-        {showFilters && activeTab !== "testers" && (
+        {showFilters && !isTesterTab && (
           <div className="mt-4 pt-4 border-t border-border grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <label className="text-sm font-medium">Type</label>
@@ -545,28 +751,80 @@ export function BetaManagementPage() {
 
       {/* Content */}
       <div className="space-y-4">
-        {/* Testers Tab */}
-        {activeTab === "testers" && (
-          (androidLoading || iosLoading) ? (
+        {/* Android Testers Tab */}
+        {activeTab === "android-testers" && (
+          androidTestersLoading ? (
             <>
               <Skeleton className="h-20 rounded-2xl" />
               <Skeleton className="h-20 rounded-2xl" />
               <Skeleton className="h-20 rounded-2xl" />
             </>
-          ) : filteredTesters.length > 0 ? (
-            filteredTesters.map((tester) => (
-              <ExtractedTesterRow
+          ) : filteredAndroidTesters.length > 0 ? (
+            filteredAndroidTesters.map((tester) => (
+              <TesterRow
                 key={tester.id}
                 tester={tester}
+                onInvite={handleInvite}
+                onActivate={handleActivate}
+                onDelete={handleDelete}
+                isActioning={isActioning}
               />
             ))
           ) : (
             <div className="glass rounded-2xl p-12 text-center">
-              <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-              <h3 className="text-xl font-bold mb-2">No testers found</h3>
-              <p className="text-muted-foreground">
-                {searchQuery ? "Try a different search term" : "Testers will appear here once they submit feedback"}
+              <Smartphone className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+              <h3 className="text-xl font-bold mb-2">No Android testers</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchQuery ? "Try a different search term" : "Add testers to your Android beta list"}
               </p>
+              {!searchQuery && (
+                <Button
+                  onClick={() => setShowAddModal(true)}
+                  className="rounded-xl bg-gradient-to-r from-primary to-orange-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Android Tester
+                </Button>
+              )}
+            </div>
+          )
+        )}
+
+        {/* iOS Testers Tab */}
+        {activeTab === "ios-testers" && (
+          iosTestersLoading ? (
+            <>
+              <Skeleton className="h-20 rounded-2xl" />
+              <Skeleton className="h-20 rounded-2xl" />
+              <Skeleton className="h-20 rounded-2xl" />
+            </>
+          ) : filteredIosTesters.length > 0 ? (
+            filteredIosTesters.map((tester) => (
+              <TesterRow
+                key={tester.id}
+                tester={tester}
+                onInvite={handleInvite}
+                onActivate={handleActivate}
+                onDelete={handleDelete}
+                isActioning={isActioning}
+              />
+            ))
+          ) : (
+            <div className="glass rounded-2xl p-12 text-center">
+              <Apple className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+              <h3 className="text-xl font-bold mb-2">No iOS testers</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchQuery ? "Try a different search term" : "Add testers to your iOS beta list"}
+              </p>
+              {!searchQuery && (
+                <Button
+                  onClick={() => setShowAddModal(true)}
+                  className="rounded-xl bg-gradient-to-r from-primary to-orange-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add iOS Tester
+                </Button>
+              )}
             </div>
           )
         )}
@@ -629,6 +887,13 @@ export function BetaManagementPage() {
           )
         )}
       </div>
+
+      {/* Add Tester Modal */}
+      <AddTesterModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        defaultPlatform={defaultPlatform}
+      />
     </div>
   );
 }
