@@ -383,9 +383,10 @@ function PartnerForm({ partner, existingCodes, onSubmit, onCancel, isLoading, de
             onChange={(e) => setFormData({ ...formData, payout_method: e.target.value })}
             className="w-full h-10 px-3 rounded-xl bg-background border border-input"
           >
-            <option value="revolut">Revolut</option>
-            <option value="bank">Bank Transfer</option>
+            <option value="">Select payout method</option>
+            <option value="bank_transfer">Bank Transfer</option>
             <option value="paypal">PayPal</option>
+            <option value="crypto">Crypto</option>
           </select>
         </div>
       </div>
