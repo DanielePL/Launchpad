@@ -152,7 +152,7 @@ function PartnerForm({ partner, existingCodes, onSubmit, onCancel, isLoading, de
     commission_percent: partner?.commission_percent || 20,
     instagram_handle: partner?.instagram_handle || "",
     follower_count: partner?.follower_count || undefined,
-    payout_method: partner?.payout_method || "revolut",
+    payout_method: partner?.payout_method || "",
     notes: partner?.notes || "",
     // Creator type & influencer fields
     creator_type: partner?.creator_type || defaultCreatorType,
@@ -652,13 +652,18 @@ export function PartnersListPage() {
   }) || [];
 
   const handleCreate = async (data: CreatePartnerInput) => {
-    // Non-super-admins create partners in pending_approval status
-    const partnerData: CreatePartnerInput = {
+    // Clean up empty strings to undefined (avoid DB check constraint violations)
+    const cleaned: CreatePartnerInput = {
       ...data,
-      status: isSuperAdmin ? "active" : "pending_approval",
+      referral_code: data.referral_code || undefined,
+      instagram_handle: data.instagram_handle || undefined,
+      payout_method: data.payout_method || undefined,
+      notes: data.notes || undefined,
+      tiktok_handle: data.tiktok_handle || undefined,
+      youtube_handle: data.youtube_handle || undefined,
       created_by: user?.email,
     };
-    await createMutation.mutateAsync(partnerData);
+    await createMutation.mutateAsync(cleaned);
     setShowForm(false);
   };
 
