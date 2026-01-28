@@ -605,7 +605,7 @@ export function PartnersListPage() {
   const createMutation = useCreatePartner();
   const updateMutation = useUpdatePartner();
   const deleteMutation = useDeletePartner();
-  const { hasPermission, isSuperAdmin, user } = useAuth();
+  const { hasPermission, user } = useAuth();
 
   const canCreatePartners = hasPermission("partners:create");
 
