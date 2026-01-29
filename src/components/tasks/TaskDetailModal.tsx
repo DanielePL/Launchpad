@@ -144,7 +144,7 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
   const handleDescriptionSave = () => {
     const newDesc = editedDescription.trim();
     if (newDesc !== (task.description || "")) {
-      updateTask.mutate({ id: taskId, data: { description: newDesc || null } });
+      updateTask.mutate({ id: taskId, data: { description: newDesc || undefined } });
     }
     setIsEditingDescription(false);
   };
