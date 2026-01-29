@@ -1,7 +1,7 @@
 import type { InfluencerCategory, TeamMember } from "./influencers";
 
-// Creator type distinguishes between partners and influencers in the unified system
-export type CreatorType = "partner" | "influencer";
+// Creator type distinguishes between partners, influencers, and beta partners in the unified system
+export type CreatorType = "partner" | "influencer" | "beta_partner";
 
 // Contract status for creators
 export type ContractStatus = "pending" | "signed" | "expired";

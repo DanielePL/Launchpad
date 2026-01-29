@@ -25,6 +25,7 @@ import {
   Smartphone,
   GraduationCap,
   Building2,
+  FlaskConical,
 } from "lucide-react";
 import {
   usePartners,
@@ -210,7 +211,7 @@ function PartnerForm({ partner, existingCodes, onSubmit, onCancel, isLoading, de
     <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold">
-          {partner ? "Edit" : "Add"} {isInfluencer ? "Influencer" : "Partner"}
+          {partner ? "Edit" : "Add"} {formData.creator_type === "influencer" ? "Influencer" : formData.creator_type === "beta_partner" ? "Beta Partner" : "Partner"}
         </h3>
         {!partner && (
           <div className="flex rounded-xl bg-background/50 p-1">
@@ -237,6 +238,18 @@ function PartnerForm({ partner, existingCodes, onSubmit, onCancel, isLoading, de
               )}
             >
               Influencer
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, creator_type: "beta_partner" })}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                formData.creator_type === "beta_partner"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Beta Partner
             </button>
           </div>
         )}
@@ -571,7 +584,7 @@ function PartnerForm({ partner, existingCodes, onSubmit, onCancel, isLoading, de
           Cancel
         </Button>
         <Button type="submit" disabled={isLoading} className="rounded-xl glow-orange">
-          {isLoading ? "Saving..." : partner ? "Update" : "Add Partner"}
+          {isLoading ? "Saving..." : partner ? "Update" : formData.creator_type === "influencer" ? "Add Influencer" : formData.creator_type === "beta_partner" ? "Add Beta Partner" : "Add Partner"}
         </Button>
       </div>
     </form>
@@ -598,7 +611,7 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-type TabFilter = "all" | "partner" | "influencer";
+type TabFilter = "all" | "partner" | "influencer" | "beta_partner";
 
 export function PartnersListPage() {
   const { data: partners, isLoading } = usePartners();
@@ -623,6 +636,7 @@ export function PartnersListPage() {
   // Count by type
   const partnerCount = partners?.filter((p) => p.creator_type === "partner").length || 0;
   const influencerCount = partners?.filter((p) => p.creator_type === "influencer").length || 0;
+  const betaPartnerCount = partners?.filter((p) => p.creator_type === "beta_partner").length || 0;
 
   // Summary stats
   const totalPartners = partners?.length || 0;
@@ -705,7 +719,7 @@ export function PartnersListPage() {
             disabled={showForm || !!editingPartner}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Add {activeTab === "influencer" ? "Influencer" : activeTab === "partner" ? "Partner" : "Creator"}
+            Add {activeTab === "influencer" ? "Influencer" : activeTab === "partner" ? "Partner" : activeTab === "beta_partner" ? "Beta Partner" : "Creator"}
           </Button>
         )}
       </div>
@@ -755,6 +769,21 @@ export function PartnersListPage() {
           Influencers
           <span className="px-1.5 py-0.5 rounded-md bg-background/20 text-xs">
             {influencerCount}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab("beta_partner")}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors",
+            activeTab === "beta_partner"
+              ? "bg-primary text-primary-foreground"
+              : "bg-card hover:bg-card/80 text-muted-foreground"
+          )}
+        >
+          <FlaskConical className="w-4 h-4" />
+          Beta Partner
+          <span className="px-1.5 py-0.5 rounded-md bg-background/20 text-xs">
+            {betaPartnerCount}
           </span>
         </button>
       </div>
@@ -977,7 +1006,7 @@ export function PartnersListPage() {
           onSubmit={handleCreate}
           onCancel={() => setShowForm(false)}
           isLoading={createMutation.isPending}
-          defaultCreatorType={activeTab === "influencer" ? "influencer" : "partner"}
+          defaultCreatorType={activeTab === "influencer" ? "influencer" : activeTab === "beta_partner" ? "beta_partner" : "partner"}
         />
       )}
 
@@ -1020,10 +1049,12 @@ export function PartnersListPage() {
                           "px-2 py-0.5 rounded-full text-xs font-medium",
                           partner.creator_type === "influencer"
                             ? "bg-purple-500/20 text-purple-500"
+                            : partner.creator_type === "beta_partner"
+                            ? "bg-emerald-500/20 text-emerald-500"
                             : "bg-blue-500/20 text-blue-500"
                         )}
                       >
-                        {partner.creator_type === "influencer" ? "Influencer" : "Partner"}
+                        {partner.creator_type === "influencer" ? "Influencer" : partner.creator_type === "beta_partner" ? "Beta Partner" : "Partner"}
                       </span>
                       {/* Status badge */}
                       <span
@@ -1170,21 +1201,23 @@ export function PartnersListPage() {
           <div className="glass rounded-2xl p-12 text-center">
             {activeTab === "influencer" ? (
               <Video className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+            ) : activeTab === "beta_partner" ? (
+              <FlaskConical className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
             ) : (
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
             )}
             <h3 className="text-xl font-bold mb-2">
-              No {activeTab === "influencer" ? "influencers" : activeTab === "partner" ? "partners" : "creators"} yet
+              No {activeTab === "influencer" ? "influencers" : activeTab === "partner" ? "partners" : activeTab === "beta_partner" ? "beta partners" : "creators"} yet
             </h3>
             <p className="text-muted-foreground mb-4">
               {canCreatePartners
-                ? `Add your first ${activeTab === "influencer" ? "influencer" : "partner"} to start tracking referrals`
-                : `No ${activeTab === "influencer" ? "influencers" : "partners"} have been added yet`}
+                ? `Add your first ${activeTab === "influencer" ? "influencer" : activeTab === "beta_partner" ? "beta partner" : "partner"} to start ${activeTab === "beta_partner" ? "collecting feedback" : "tracking referrals"}`
+                : `No ${activeTab === "influencer" ? "influencers" : activeTab === "beta_partner" ? "beta partners" : "partners"} have been added yet`}
             </p>
             {canCreatePartners && (
               <Button onClick={() => setShowForm(true)} className="rounded-xl glow-orange">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Your First {activeTab === "influencer" ? "Influencer" : "Partner"}
+                Add Your First {activeTab === "influencer" ? "Influencer" : activeTab === "beta_partner" ? "Beta Partner" : "Partner"}
               </Button>
             )}
           </div>

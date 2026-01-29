@@ -23,7 +23,9 @@ import {
   X,
   Instagram,
   ExternalLink,
+  CheckSquare,
 } from "lucide-react";
+import { TaskDeadlineWidget } from "@/components/tasks/dashboard/TaskDeadlineWidget";
 import { useComprehensiveSummary, useServiceCosts } from "@/hooks/useCosts";
 import { useBreakEven } from "@/hooks/useRevenue";
 import { usePartners, usePendingPayouts, usePartnerReferrals, useApprovePartner } from "@/hooks/usePartners";
@@ -725,6 +727,9 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* Task Deadline Alerts */}
+      <TaskDeadlineWidget />
+
       {/* Quick Actions */}
       <div className="glass rounded-2xl p-6">
         <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
@@ -745,6 +750,12 @@ export function DashboardPage() {
             <Button variant="outline" className="rounded-xl">
               <UserPlus className="w-4 h-4 mr-2" />
               Add Creator
+            </Button>
+          </Link>
+          <Link to="/tasks">
+            <Button variant="outline" className="rounded-xl">
+              <CheckSquare className="w-4 h-4 mr-2" />
+              Manage Tasks
             </Button>
           </Link>
           <Link to="/payouts">

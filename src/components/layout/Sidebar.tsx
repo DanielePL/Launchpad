@@ -18,6 +18,7 @@ import {
   Database,
   FolderOpen,
   Microscope,
+  CheckSquare,
   type LucideIcon,
 } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -130,6 +131,15 @@ const allNavigation: NavItem[] = [
     icon: FolderOpen,
     href: "/storage",
     permission: "dashboard",
+  },
+  {
+    label: "Tasks",
+    icon: CheckSquare,
+    permission: "dashboard",
+    children: [
+      { label: "All Tasks", href: "/tasks" },
+      { label: "Projects", href: "/tasks/projects" },
+    ],
   },
   {
     label: "Prometheus Lab",

@@ -34,6 +34,10 @@ import { AmbassadorControlPage } from "@/pages/ambassadors/AmbassadorControlPage
 import { SupabaseHealthPage } from "@/pages/health/SupabaseHealthPage";
 import { TeamStoragePage } from "@/pages/storage/TeamStoragePage";
 
+// Task Pages
+import { TasksPage } from "@/pages/tasks/TasksPage";
+import { ProjectsPage } from "@/pages/tasks/ProjectsPage";
+
 // Lab Pages
 import { LabDashboardPage } from "@/pages/lab/LabDashboardPage";
 import { AthletesListPage } from "@/pages/lab/AthletesListPage";
@@ -129,6 +133,10 @@ export const router = createBrowserRouter([
 
       // Team Storage
       { path: "storage", element: <TeamStoragePage /> },
+
+      // Tasks
+      { path: "tasks", element: <TasksPage /> },
+      { path: "tasks/projects", element: <ProjectsPage /> },
 
       // Users
       { path: "users", element: <UsersListPage /> },
