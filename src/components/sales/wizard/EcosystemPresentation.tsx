@@ -3,21 +3,17 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  LayoutDashboard,
   Users,
   Target,
   TrendingUp,
   BarChart3,
-  Dumbbell,
   Smartphone,
   Building2,
+  Globe,
+  CheckCircle2,
   Crown,
   Zap,
   Shield,
-  Globe,
-  Clock,
-  CheckCircle2,
-  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -40,22 +36,23 @@ export function EcosystemPresentation({ onClose }: EcosystemPresentationProps) {
     // Slide 1: Title
     {
       id: 1,
-      title: "Prometheus",
-      subtitle: "The Complete Fitness Ecosystem",
+      title: "",
       content: (
         <div className="flex flex-col items-center justify-center h-full text-center space-y-8">
           <div className="relative">
             <div className="absolute -inset-8 bg-primary/20 rounded-full blur-3xl" />
-            <div className="relative h-32 w-32 rounded-3xl bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center shadow-2xl">
-              <Dumbbell className="h-16 w-16 text-white" />
-            </div>
+            <img
+              src="/presentation/logo-flame.png"
+              alt="Prometheus"
+              className="relative h-32 w-32 object-contain"
+            />
           </div>
           <div className="space-y-4">
             <h1 className="text-5xl md:text-7xl font-bold font-heading bg-gradient-to-r from-primary to-orange-600 bg-clip-text text-transparent">
               Prometheus
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl">
-              Velocity Based Training Platform für moderne Fitness Studios,
+              Die All-in-One Plattform für Fitness Studios,
               Therapiepraxen & Sportvereine
             </p>
           </div>
@@ -119,17 +116,214 @@ export function EcosystemPresentation({ onClose }: EcosystemPresentationProps) {
       ),
     },
 
-    // Slide 3: VBT Technology
+    // Slide 3: Command Center / Dashboard
     {
       id: 3,
-      title: "Velocity Based Training",
+      title: "Command Center",
+      subtitle: "Dein zentrales Dashboard",
+      content: (
+        <div className="grid md:grid-cols-2 gap-8 h-full items-center">
+          <div className="space-y-6">
+            <p className="text-lg text-muted-foreground">
+              Behalte alle wichtigen KPIs im Blick - von Mitgliederzahlen
+              bis Umsatzentwicklung, alles auf einen Blick.
+            </p>
+            <div className="space-y-4">
+              {[
+                { icon: BarChart3, text: "Echtzeit-Statistiken" },
+                { icon: TrendingUp, text: "Umsatz-Tracking" },
+                { icon: Users, text: "Mitglieder-Übersicht" },
+                { icon: Target, text: "Ziel-Monitoring" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <item.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="font-medium">{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="relative">
+            <div className="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl" />
+            <img
+              src="/presentation/dashboard.png"
+              alt="Dashboard"
+              className="relative rounded-2xl shadow-2xl border border-muted/30 w-full"
+            />
+          </div>
+        </div>
+      ),
+    },
+
+    // Slide 4: Coach Management
+    {
+      id: 4,
+      title: "Team Management",
+      subtitle: "Dein Team im Griff",
+      content: (
+        <div className="grid md:grid-cols-2 gap-8 h-full items-center">
+          <div className="relative order-2 md:order-1">
+            <div className="absolute -inset-4 bg-blue-500/10 rounded-3xl blur-2xl" />
+            <img
+              src="/presentation/coach-management.png"
+              alt="Coach Management"
+              className="relative rounded-2xl shadow-2xl border border-muted/30 w-full"
+            />
+          </div>
+          <div className="space-y-6 order-1 md:order-2">
+            <p className="text-lg text-muted-foreground">
+              Verwalte dein gesamtes Trainer-Team an einem Ort.
+              Zeiterfassung, Provisionen und Performance-Tracking inklusive.
+            </p>
+            <div className="space-y-4">
+              {[
+                "Trainer-Profile & Qualifikationen",
+                "Automatische Provisionsberechnung",
+                "Stundenerfassung & Abrechnung",
+                "Performance-Vergleiche",
+              ].map((text, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                  <span>{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+
+    // Slide 5: Member CRM
+    {
+      id: 5,
+      title: "Member CRM",
+      subtitle: "Alle Mitglieder im Blick",
+      content: (
+        <div className="grid md:grid-cols-2 gap-8 h-full items-center">
+          <div className="space-y-6">
+            <p className="text-lg text-muted-foreground">
+              Vollständige Mitgliederverwaltung mit Trainingshistorie,
+              Zahlungsstatus und persönlichen Notizen.
+            </p>
+            <div className="space-y-4">
+              {[
+                "360° Mitglieder-Profile",
+                "Trainings-Historie & Fortschritt",
+                "Automatische Erinnerungen",
+                "Segmentierung & Tags",
+              ].map((text, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                  <span>{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="relative">
+            <div className="absolute -inset-4 bg-purple-500/10 rounded-3xl blur-2xl" />
+            <img
+              src="/presentation/member-crm.png"
+              alt="Member CRM"
+              className="relative rounded-2xl shadow-2xl border border-muted/30 w-full"
+            />
+          </div>
+        </div>
+      ),
+    },
+
+    // Slide 6: Financials
+    {
+      id: 6,
+      title: "Finanzen & Umsatz",
+      subtitle: "Volle Kontrolle über deine Zahlen",
+      content: (
+        <div className="grid md:grid-cols-2 gap-8 h-full items-center">
+          <div className="relative order-2 md:order-1">
+            <div className="absolute -inset-4 bg-green-500/10 rounded-3xl blur-2xl" />
+            <img
+              src="/presentation/financials.png"
+              alt="Financials"
+              className="relative rounded-2xl shadow-2xl border border-muted/30 w-full"
+            />
+          </div>
+          <div className="space-y-6 order-1 md:order-2">
+            <p className="text-lg text-muted-foreground">
+              Umsätze, Kosten und Margen auf einen Blick.
+              Automatische Reports und Prognosen inklusive.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: "MRR Tracking", value: "€12.5k" },
+                { label: "Churn Rate", value: "2.3%" },
+                { label: "LTV", value: "€890" },
+                { label: "CAC", value: "€45" },
+              ].map((stat, i) => (
+                <div
+                  key={i}
+                  className="p-4 rounded-xl bg-card/30 border border-muted/20"
+                >
+                  <div className="text-2xl font-bold text-primary">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+
+    // Slide 7: Analytics
+    {
+      id: 7,
+      title: "Analytics & Reports",
+      subtitle: "Datengetriebene Entscheidungen",
+      content: (
+        <div className="grid md:grid-cols-2 gap-8 h-full items-center">
+          <div className="space-y-6">
+            <p className="text-lg text-muted-foreground">
+              Verstehe dein Business mit detaillierten Analytics.
+              Von Besuchszeiten bis Trainingsvorlieben.
+            </p>
+            <div className="space-y-4">
+              {[
+                { icon: BarChart3, text: "Auslastungs-Heatmaps" },
+                { icon: TrendingUp, text: "Wachstums-Trends" },
+                { icon: Users, text: "Kohortenanalyse" },
+                { icon: Target, text: "Conversion-Tracking" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <item.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="font-medium">{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="relative">
+            <div className="absolute -inset-4 bg-cyan-500/10 rounded-3xl blur-2xl" />
+            <img
+              src="/presentation/analytics.png"
+              alt="Analytics"
+              className="relative rounded-2xl shadow-2xl border border-muted/30 w-full"
+            />
+          </div>
+        </div>
+      ),
+    },
+
+    // Slide 8: VBT Technology
+    {
+      id: 8,
+      title: "VBT Technology",
       subtitle: "Die Zukunft des Krafttrainings",
       content: (
         <div className="grid md:grid-cols-2 gap-12 h-full items-center">
           <div className="space-y-6">
             <p className="text-lg text-muted-foreground">
-              VBT misst die Bewegungsgeschwindigkeit in Echtzeit und passt
-              das Training automatisch an die Tagesform des Athleten an.
+              Velocity Based Training misst die Bewegungsgeschwindigkeit in Echtzeit
+              und passt das Training automatisch an die Tagesform an.
             </p>
             <div className="space-y-4">
               {[
@@ -156,11 +350,11 @@ export function EcosystemPresentation({ onClose }: EcosystemPresentationProps) {
                   <div className="text-sm text-muted-foreground">m/s Target Velocity</div>
                 </div>
                 <div className="h-4 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-primary to-orange-600" />
+                  <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-primary to-orange-600 animate-pulse" />
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Aktuelle Rep: 0.72 m/s</span>
-                  <span className="text-green-500">96% Match</span>
+                  <span className="text-green-500 font-medium">96% Match</span>
                 </div>
               </div>
             </div>
@@ -169,161 +363,9 @@ export function EcosystemPresentation({ onClose }: EcosystemPresentationProps) {
       ),
     },
 
-    // Slide 4: Coach Dashboard
+    // Slide 9: Founding Partner
     {
-      id: 4,
-      title: "Coach Dashboard",
-      subtitle: "Alle Athleten im Blick",
-      content: (
-        <div className="grid md:grid-cols-2 gap-8 h-full items-center">
-          <div className="space-y-6">
-            {[
-              {
-                icon: Users,
-                title: "Athleten-Management",
-                desc: "Übersicht aller Kunden mit Fortschritts-Tracking",
-              },
-              {
-                icon: LayoutDashboard,
-                title: "Workout Builder",
-                desc: "Drag & Drop Trainingsplan-Erstellung",
-              },
-              {
-                icon: BarChart3,
-                title: "Performance Analytics",
-                desc: "Detaillierte Statistiken und Trends",
-              },
-              {
-                icon: Clock,
-                title: "Session Management",
-                desc: "Termine, Erinnerungen & Automatisierung",
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="flex gap-4 p-4 rounded-2xl bg-card/30 backdrop-blur border border-muted/20"
-              >
-                <div className="h-12 w-12 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <item.icon className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold">{item.title}</h4>
-                  <p className="text-sm text-muted-foreground">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="relative">
-            <div className="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl" />
-            <div className="relative rounded-3xl bg-card/50 backdrop-blur border border-muted/30 p-6 space-y-4">
-              <div className="flex items-center justify-between mb-6">
-                <span className="font-semibold">Athleten Übersicht</span>
-                <span className="text-sm text-primary">12 aktiv</span>
-              </div>
-              {["Max M.", "Lisa K.", "Tom S."].map((name, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-4 p-3 rounded-xl bg-background/50"
-                >
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center text-white font-bold">
-                    {name[0]}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Letzte Session: heute
-                    </div>
-                  </div>
-                  <div className="text-green-500 text-sm">+12%</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-
-    // Slide 5: Enterprise Features
-    {
-      id: 5,
-      title: "Enterprise Features",
-      subtitle: "Für Studios & Vereine",
-      content: (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-full items-center">
-          {[
-            { icon: Users, title: "Multi-Coach", desc: "Unbegrenzte Trainer" },
-            { icon: BarChart3, title: "Analytics", desc: "Business Intelligence" },
-            { icon: Target, title: "CRM", desc: "Lead Management" },
-            { icon: TrendingUp, title: "Revenue", desc: "Einnahmen-Tracking" },
-            { icon: Shield, title: "Branding", desc: "White-Label Option" },
-            { icon: Globe, title: "API", desc: "Volle Integration" },
-            { icon: Clock, title: "Automation", desc: "Workflow-Tools" },
-            { icon: Star, title: "Support", desc: "Priority 24/7" },
-          ].map((item, i) => (
-            <div
-              key={i}
-              className="group p-6 rounded-2xl bg-card/30 backdrop-blur border border-muted/20 hover:border-primary/30 hover:bg-card/50 transition-all text-center"
-            >
-              <div className="h-14 w-14 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <item.icon className="h-7 w-7 text-primary" />
-              </div>
-              <h4 className="font-semibold mb-1">{item.title}</h4>
-              <p className="text-sm text-muted-foreground">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      ),
-    },
-
-    // Slide 6: Partner Program
-    {
-      id: 6,
-      title: "Partner Programm",
-      subtitle: "Gemeinsam wachsen",
-      content: (
-        <div className="grid md:grid-cols-2 gap-12 h-full items-center">
-          <div className="space-y-8">
-            <p className="text-lg text-muted-foreground">
-              Werde Teil des Prometheus Partner-Netzwerks und verdiene
-              mit jeder Empfehlung.
-            </p>
-            <div className="space-y-4">
-              {[
-                "30% wiederkehrende Provision",
-                "Eigenes Partner-Dashboard",
-                "Marketing-Materialien inklusive",
-                "Dedicated Account Manager",
-              ].map((text, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  <span>{text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: "Partner", value: "150+" },
-              { label: "Auszahlungen", value: "€85k+" },
-              { label: "Avg. Provision", value: "€450/mo" },
-              { label: "Conversion", value: "18%" },
-            ].map((stat, i) => (
-              <div
-                key={i}
-                className="p-6 rounded-2xl bg-card/30 backdrop-blur border border-muted/20 text-center"
-              >
-                <div className="text-3xl font-bold text-primary">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ),
-    },
-
-    // Slide 7: Founding Partner
-    {
-      id: 7,
+      id: 9,
       title: "Founding Partner Programm",
       subtitle: "Exklusive Vorteile für Early Adopters",
       content: (
@@ -378,9 +420,9 @@ export function EcosystemPresentation({ onClose }: EcosystemPresentationProps) {
       ),
     },
 
-    // Slide 8: Pricing
+    // Slide 10: Pricing
     {
-      id: 8,
+      id: 10,
       title: "Pricing",
       subtitle: "Flexibel für jede Größe",
       content: (
@@ -416,7 +458,7 @@ export function EcosystemPresentation({ onClose }: EcosystemPresentationProps) {
                 "Unbegrenzte Coaches",
                 "White-Label Option",
                 "Custom Integrationen",
-                "Dedicated Account Manager",
+                "Dedicated Manager",
                 "SLA Garantie",
               ],
             },
@@ -498,9 +540,11 @@ export function EcosystemPresentation({ onClose }: EcosystemPresentationProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-muted/30">
         <div className="flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center">
-            <Dumbbell className="h-5 w-5 text-white" />
-          </div>
+          <img
+            src="/presentation/logo-flame.png"
+            alt="Prometheus"
+            className="h-10 w-10 object-contain"
+          />
           <div>
             <div className="font-semibold font-heading">Prometheus Ecosystem</div>
             <div className="text-xs text-muted-foreground">
@@ -509,7 +553,7 @@ export function EcosystemPresentation({ onClose }: EcosystemPresentationProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground mr-4">
+          <span className="text-sm text-muted-foreground mr-4 hidden md:block">
             ← → oder Swipe zum Navigieren
           </span>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -520,21 +564,28 @@ export function EcosystemPresentation({ onClose }: EcosystemPresentationProps) {
 
       {/* Slide Content */}
       <div className="flex-1 relative overflow-hidden">
-        <div className="absolute inset-0 p-8 md:p-12">
+        <div className="absolute inset-0 p-6 md:p-12">
           {/* Slide Header */}
-          <div className="mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold font-heading">
-              {currentSlideData.title}
-            </h2>
-            {currentSlideData.subtitle && (
-              <p className="text-lg text-muted-foreground mt-2">
-                {currentSlideData.subtitle}
-              </p>
-            )}
-          </div>
+          {currentSlideData.title && (
+            <div className="mb-6 md:mb-8">
+              <h2 className="text-2xl md:text-4xl font-bold font-heading">
+                {currentSlideData.title}
+              </h2>
+              {currentSlideData.subtitle && (
+                <p className="text-base md:text-lg text-muted-foreground mt-2">
+                  {currentSlideData.subtitle}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Slide Body */}
-          <div className="h-[calc(100%-120px)]">{currentSlideData.content}</div>
+          <div className={cn(
+            "h-full",
+            currentSlideData.title ? "h-[calc(100%-100px)]" : ""
+          )}>
+            {currentSlideData.content}
+          </div>
         </div>
 
         {/* Navigation Arrows */}
