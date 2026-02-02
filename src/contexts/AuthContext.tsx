@@ -96,24 +96,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       // Fetch user profile
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("id", userId)
         .single();
+
+      if (profileError) {
+        // Profile might not exist yet for new users, that's ok
+        console.log("Profile not found, user may need to complete onboarding");
+      }
 
       if (profile) {
         setUserProfile(profile);
       }
 
       // Fetch all organization memberships
-      const { data: memberships } = await supabase
+      const { data: memberships, error: membershipsError } = await supabase
         .from("organization_members")
         .select(`
           *,
           organization:organizations(*)
         `)
         .eq("user_id", userId);
+
+      if (membershipsError) {
+        // User might not be in any org yet, that's ok
+        console.log("No memberships found, user may need to create organization");
+        return;
+      }
 
       if (memberships && memberships.length > 0) {
         // Extract organizations
@@ -149,6 +160,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error) {
+      // Ignore abort errors (component unmounted)
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
       console.error("Error fetching user data:", error);
     }
   }, []);
@@ -163,8 +178,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    let isMounted = true;
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -179,6 +198,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -192,7 +213,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [fetchUserData]);
 
   // ---------------------------------------------------------------------------
