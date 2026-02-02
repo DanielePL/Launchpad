@@ -184,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session
     const initSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase!.auth.getSession();
 
         if (!isMounted) return;
 
