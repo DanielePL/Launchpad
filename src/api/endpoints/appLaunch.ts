@@ -12,7 +12,14 @@ import type {
   InviteTesterInput,
   AppRelease,
   CreateReleaseInput,
+  ProjectAsset,
+  UploadAssetInput,
+  UpdateAssetInput,
+  AssetFilters,
+  AssetRequirementsStatus,
+  RequirementStatus,
 } from "@/api/types/appLaunch";
+import { SCREENSHOT_REQUIREMENTS } from "@/api/types/appLaunch";
 
 // =============================================================================
 // App Projects
@@ -481,6 +488,328 @@ export async function getAppLaunchStats(): Promise<AppLaunchStats> {
 }
 
 // =============================================================================
+// Project Assets
+// =============================================================================
+
+const ASSETS_BUCKET = "app-assets";
+
+/**
+ * Get all assets for a project with optional filters
+ */
+export async function getProjectAssets(
+  projectId: string,
+  filters?: AssetFilters
+): Promise<ProjectAsset[]> {
+  if (!supabase) return [];
+
+  let query = supabase
+    .from("project_assets")
+    .select("*")
+    .eq("project_id", projectId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (filters?.asset_type) {
+    query = query.eq("asset_type", filters.asset_type);
+  }
+  if (filters?.platform) {
+    query = query.eq("platform", filters.platform);
+  }
+  if (filters?.device_type) {
+    query = query.eq("device_type", filters.device_type);
+  }
+  if (filters?.locale) {
+    query = query.eq("locale", filters.locale);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching project assets:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Upload an asset to storage and create DB record
+ */
+export async function uploadAsset(input: UploadAssetInput): Promise<ProjectAsset | null> {
+  if (!supabase) return null;
+
+  const { data: userData } = await supabase.auth.getUser();
+  const { data: project } = await supabase
+    .from("app_projects")
+    .select("organization_id")
+    .eq("id", input.project_id)
+    .single();
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  // Build storage path: {org_id}/{project_id}/{asset_type}/{uuid}_{filename}
+  const uuid = crypto.randomUUID();
+  const sanitizedName = input.file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const folder = input.asset_type === "screenshot" ? `screenshots/${input.device_type || "phone"}` :
+                 input.asset_type === "icon" ? "icons" :
+                 input.asset_type === "feature_graphic" ? "feature-graphics" :
+                 input.asset_type;
+  const storagePath = `${project.organization_id}/${input.project_id}/${folder}/${uuid}_${sanitizedName}`;
+
+  // Upload to storage
+  const { error: uploadError } = await supabase.storage
+    .from(ASSETS_BUCKET)
+    .upload(storagePath, input.file, {
+      contentType: input.file.type,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    console.error("Error uploading asset:", uploadError);
+    throw new Error(uploadError.message);
+  }
+
+  // Get public URL
+  const { data: urlData } = supabase.storage
+    .from(ASSETS_BUCKET)
+    .getPublicUrl(storagePath);
+
+  // Get image dimensions if it's an image
+  let width: number | null = null;
+  let height: number | null = null;
+
+  if (input.file.type.startsWith("image/")) {
+    try {
+      const dimensions = await getImageDimensions(input.file);
+      width = dimensions.width;
+      height = dimensions.height;
+    } catch {
+      // Ignore dimension errors
+    }
+  }
+
+  // Get current max sort_order for this asset type
+  const { data: maxSortData } = await supabase
+    .from("project_assets")
+    .select("sort_order")
+    .eq("project_id", input.project_id)
+    .eq("asset_type", input.asset_type)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .single();
+
+  const sortOrder = (maxSortData?.sort_order ?? -1) + 1;
+
+  // Create DB record
+  const { data, error } = await supabase
+    .from("project_assets")
+    .insert({
+      project_id: input.project_id,
+      organization_id: project.organization_id,
+      asset_type: input.asset_type,
+      name: input.name,
+      platform: input.platform,
+      device_type: input.device_type || null,
+      file_path: storagePath,
+      file_url: urlData.publicUrl,
+      file_size: input.file.size,
+      mime_type: input.file.type,
+      width,
+      height,
+      sort_order: sortOrder,
+      metadata: input.metadata || {},
+      uploaded_by: userData.user?.id,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    // Clean up uploaded file if DB insert fails
+    await supabase.storage.from(ASSETS_BUCKET).remove([storagePath]);
+    console.error("Error creating asset record:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+/**
+ * Helper to get image dimensions
+ */
+function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+/**
+ * Update asset metadata
+ */
+export async function updateAsset(
+  assetId: string,
+  input: UpdateAssetInput
+): Promise<ProjectAsset | null> {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("project_assets")
+    .update({ ...input, updated_at: new Date().toISOString() })
+    .eq("id", assetId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating asset:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+/**
+ * Delete an asset from storage and DB
+ */
+export async function deleteAsset(assetId: string): Promise<boolean> {
+  if (!supabase) return false;
+
+  // Get the asset to find storage path
+  const { data: asset } = await supabase
+    .from("project_assets")
+    .select("file_path")
+    .eq("id", assetId)
+    .single();
+
+  if (asset?.file_path) {
+    await supabase.storage.from(ASSETS_BUCKET).remove([asset.file_path]);
+  }
+
+  const { error } = await supabase
+    .from("project_assets")
+    .delete()
+    .eq("id", assetId);
+
+  if (error) {
+    console.error("Error deleting asset:", error);
+    throw new Error(error.message);
+  }
+
+  return true;
+}
+
+/**
+ * Reorder assets within a project/type
+ */
+export async function reorderAssets(
+  projectId: string,
+  orderedIds: string[]
+): Promise<boolean> {
+  if (!supabase) return false;
+
+  // Update each asset with its new sort_order
+  const updates = orderedIds.map((id, index) =>
+    supabase!
+      .from("project_assets")
+      .update({ sort_order: index })
+      .eq("id", id)
+      .eq("project_id", projectId)
+  );
+
+  const results = await Promise.all(updates);
+  const hasError = results.some((r) => r.error);
+
+  if (hasError) {
+    console.error("Error reordering assets");
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Get the status of asset requirements for a project
+ */
+export async function getAssetRequirementsStatus(
+  projectId: string
+): Promise<AssetRequirementsStatus | null> {
+  if (!supabase) return null;
+
+  // Get project platforms
+  const { data: project } = await supabase
+    .from("app_projects")
+    .select("platforms")
+    .eq("id", projectId)
+    .single();
+
+  if (!project) return null;
+
+  // Get all assets for this project
+  const { data: assets } = await supabase
+    .from("project_assets")
+    .select("*")
+    .eq("project_id", projectId);
+
+  const assetList = assets || [];
+
+  // Build screenshot requirements status
+  const screenshotStatus: AssetRequirementsStatus["screenshots"] = {
+    android: [],
+    ios: [],
+  };
+
+  for (const req of SCREENSHOT_REQUIREMENTS) {
+    if (!project.platforms.includes(req.platform)) continue;
+
+    const matchingAssets = assetList.filter(
+      (a) =>
+        a.asset_type === "screenshot" &&
+        (a.platform === req.platform || a.platform === "both") &&
+        a.device_type === req.device_type
+    );
+
+    const status: RequirementStatus = {
+      device_type: req.device_type,
+      device_name: req.device_name,
+      required: req.required,
+      min_count: req.required ? 2 : 0,
+      max_count: req.max_count,
+      uploaded_count: matchingAssets.length,
+      is_satisfied: req.required ? matchingAssets.length >= 2 : true,
+    };
+
+    screenshotStatus[req.platform].push(status);
+  }
+
+  // Check icon status
+  const iconStatus = {
+    android: project.platforms.includes("android")
+      ? assetList.some((a) => a.asset_type === "icon" && (a.platform === "android" || a.platform === "both"))
+      : true,
+    ios: project.platforms.includes("ios")
+      ? assetList.some((a) => a.asset_type === "icon" && (a.platform === "ios" || a.platform === "both"))
+      : true,
+  };
+
+  // Check feature graphic status (Android only)
+  const featureGraphicStatus = project.platforms.includes("android")
+    ? assetList.some((a) => a.asset_type === "feature_graphic")
+    : true;
+
+  return {
+    screenshots: screenshotStatus,
+    icon: iconStatus,
+    featureGraphic: featureGraphicStatus,
+  };
+}
+
+// =============================================================================
 // AI Chat
 // =============================================================================
 
@@ -550,4 +879,12 @@ export const appLaunchEndpoints = {
 
   // AI Chat
   sendAIMessage,
+
+  // Assets
+  getProjectAssets,
+  uploadAsset,
+  updateAsset,
+  deleteAsset,
+  reorderAssets,
+  getAssetRequirementsStatus,
 };

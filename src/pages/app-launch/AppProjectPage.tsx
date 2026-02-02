@@ -124,6 +124,12 @@ export function AppProjectPage() {
             </div>
           </div>
         </div>
+        <Link to={`/app-launch/project/${id}/assets`}>
+          <Button variant="outline" className="gap-2">
+            <Image className="h-4 w-4" />
+            Asset Studio
+          </Button>
+        </Link>
         <Link to={`/app-launch/assistant?project=${id}`}>
           <Button variant="outline" className="gap-2">
             <Bot className="h-4 w-4" />

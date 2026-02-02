@@ -7,6 +7,9 @@ import type {
   InviteTesterInput,
   CreateReleaseInput,
   ChecklistCategory,
+  UploadAssetInput,
+  UpdateAssetInput,
+  AssetFilters,
 } from "@/api/types/appLaunch";
 
 // =============================================================================
@@ -23,6 +26,8 @@ export const appLaunchKeys = {
   betaTesters: (projectId: string) => [...appLaunchKeys.all, "betaTesters", projectId] as const,
   releases: (projectId: string) => [...appLaunchKeys.all, "releases", projectId] as const,
   stats: () => [...appLaunchKeys.all, "stats"] as const,
+  assets: (projectId: string, filters?: AssetFilters) => [...appLaunchKeys.all, "assets", projectId, filters] as const,
+  assetRequirements: (projectId: string) => [...appLaunchKeys.all, "assetRequirements", projectId] as const,
 };
 
 // =============================================================================
@@ -342,6 +347,107 @@ export function useAppLaunchStats() {
   return useQuery({
     queryKey: appLaunchKeys.stats(),
     queryFn: appLaunchEndpoints.getAppLaunchStats,
+  });
+}
+
+// =============================================================================
+// Asset Hooks
+// =============================================================================
+
+/**
+ * Get project assets with optional filters
+ */
+export function useProjectAssets(projectId: string, filters?: AssetFilters) {
+  return useQuery({
+    queryKey: appLaunchKeys.assets(projectId, filters),
+    queryFn: () => appLaunchEndpoints.getProjectAssets(projectId, filters),
+    enabled: !!projectId,
+  });
+}
+
+/**
+ * Get asset requirements status for a project
+ */
+export function useAssetRequirements(projectId: string) {
+  return useQuery({
+    queryKey: appLaunchKeys.assetRequirements(projectId),
+    queryFn: () => appLaunchEndpoints.getAssetRequirementsStatus(projectId),
+    enabled: !!projectId,
+  });
+}
+
+/**
+ * Upload an asset
+ */
+export function useUploadAsset() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UploadAssetInput) => appLaunchEndpoints.uploadAsset(input),
+    onSuccess: (_, input) => {
+      queryClient.invalidateQueries({
+        queryKey: appLaunchKeys.assets(input.project_id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: appLaunchKeys.assetRequirements(input.project_id),
+      });
+    },
+  });
+}
+
+/**
+ * Update an asset
+ */
+export function useUpdateAsset() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ assetId, input }: { assetId: string; input: UpdateAssetInput }) =>
+      appLaunchEndpoints.updateAsset(assetId, input),
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.invalidateQueries({
+          queryKey: appLaunchKeys.assets(data.project_id),
+        });
+      }
+    },
+  });
+}
+
+/**
+ * Delete an asset
+ */
+export function useDeleteAsset() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ assetId }: { assetId: string; projectId: string }) =>
+      appLaunchEndpoints.deleteAsset(assetId),
+    onSuccess: (_, { projectId }) => {
+      queryClient.invalidateQueries({
+        queryKey: appLaunchKeys.assets(projectId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: appLaunchKeys.assetRequirements(projectId),
+      });
+    },
+  });
+}
+
+/**
+ * Reorder assets
+ */
+export function useReorderAssets() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ projectId, orderedIds }: { projectId: string; orderedIds: string[] }) =>
+      appLaunchEndpoints.reorderAssets(projectId, orderedIds),
+    onSuccess: (_, { projectId }) => {
+      queryClient.invalidateQueries({
+        queryKey: appLaunchKeys.assets(projectId),
+      });
+    },
   });
 }
 

@@ -447,3 +447,65 @@ export const APP_CATEGORIES = {
     "Shopping", "Social Networking", "Sports", "Travel", "Utilities", "Weather"
   ]
 };
+
+// -----------------------------------------------------------------------------
+// Asset Studio Types
+// -----------------------------------------------------------------------------
+
+export interface UpdateAssetInput {
+  name?: string;
+  sort_order?: number;
+  is_approved?: boolean;
+  approval_notes?: string;
+  locale?: string;
+}
+
+export interface AssetFilters {
+  asset_type?: AssetType;
+  platform?: Platform | "both";
+  device_type?: string;
+  locale?: string;
+}
+
+export interface RequirementStatus {
+  device_type: string;
+  device_name: string;
+  required: boolean;
+  min_count: number;
+  max_count: number;
+  uploaded_count: number;
+  is_satisfied: boolean;
+}
+
+export interface AssetRequirementsStatus {
+  screenshots: {
+    android: RequirementStatus[];
+    ios: RequirementStatus[];
+  };
+  icon: {
+    android: boolean;
+    ios: boolean;
+  };
+  featureGraphic: boolean;
+}
+
+export interface IconRequirement {
+  size: number;
+  name: string;
+  required: boolean;
+}
+
+export const ICON_REQUIREMENTS: Record<Platform, IconRequirement[]> = {
+  android: [
+    { size: 512, name: "Play Store Icon", required: true },
+  ],
+  ios: [
+    { size: 1024, name: "App Store Icon", required: true },
+  ],
+};
+
+export const FEATURE_GRAPHIC_REQUIREMENTS = {
+  width: 1024,
+  height: 500,
+  required: true,
+};

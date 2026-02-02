@@ -67,6 +67,7 @@ import { PlansPage } from "@/pages/billing/PlansPage";
 import { AppLaunchDashboard } from "@/pages/app-launch/AppLaunchDashboard";
 import { AppProjectPage } from "@/pages/app-launch/AppProjectPage";
 import { AIAssistantPage } from "@/pages/app-launch/AIAssistantPage";
+import { AssetStudioPage } from "@/pages/app-launch/AssetStudioPage";
 
 // Creator Portal Pages
 import CreatorLogin from "@/pages/creator-portal/CreatorLogin";
@@ -424,6 +425,10 @@ export const router = createBrowserRouter([
       {
         path: "app-launch/project/:id",
         element: <AppProjectPage />,
+      },
+      {
+        path: "app-launch/project/:id/assets",
+        element: <AssetStudioPage />,
       },
       {
         path: "app-launch/assistant",
