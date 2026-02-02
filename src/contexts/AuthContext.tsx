@@ -174,6 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!supabase) {
+      console.log("Supabase not configured");
       setIsLoading(false);
       return;
     }
@@ -181,18 +182,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
 
-      setSession(session);
-      setUser(session?.user ?? null);
+        if (!isMounted) return;
 
-      if (session?.user) {
-        fetchUserData(session.user.id);
+        if (error) {
+          console.error("Error getting session:", error);
+          setIsLoading(false);
+          return;
+        }
+
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          await fetchUserData(session.user.id);
+        }
+      } catch (error) {
+        console.error("Failed to initialize session:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
+    };
 
-      setIsLoading(false);
-    });
+    initSession();
 
     // Listen for auth changes
     const {
