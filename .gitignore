@@ -25,3 +25,8 @@ dist-ssr
 
 # Supabase CLI temp files
 supabase/.temp/
+
+# Environment files (secrets!)
+.env
+.env.local
+.env.production
