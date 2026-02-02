@@ -481,6 +481,40 @@ export async function getAppLaunchStats(): Promise<AppLaunchStats> {
 }
 
 // =============================================================================
+// AI Chat
+// =============================================================================
+
+/**
+ * Send a message to Launch AI and get a response
+ */
+export async function sendAIMessage(
+  message: string,
+  conversationId?: string,
+  projectId?: string
+): Promise<{
+  conversation_id: string;
+  message: string;
+  usage?: { input_tokens: number; output_tokens: number };
+} | null> {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase.functions.invoke("launch-ai-chat", {
+    body: {
+      message,
+      conversation_id: conversationId,
+      project_id: projectId,
+    },
+  });
+
+  if (error) {
+    console.error("Error calling Launch AI:", error);
+    throw new Error(error.message || "Failed to get AI response");
+  }
+
+  return data;
+}
+
+// =============================================================================
 // Export all endpoints
 // =============================================================================
 
@@ -513,4 +547,7 @@ export const appLaunchEndpoints = {
 
   // Stats
   getAppLaunchStats,
+
+  // AI Chat
+  sendAIMessage,
 };

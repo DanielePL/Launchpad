@@ -215,7 +215,7 @@ export function useCreateConversation() {
 }
 
 /**
- * Send a message
+ * Send a message (local only - for manual message adding)
  */
 export function useSendMessage() {
   const queryClient = useQueryClient();
@@ -232,6 +232,35 @@ export function useSendMessage() {
       queryClient.invalidateQueries({
         queryKey: appLaunchKeys.conversation(conversationId),
       });
+    },
+  });
+}
+
+/**
+ * Send a message to Launch AI and get a response
+ */
+export function useSendAIMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      message,
+      conversationId,
+      projectId,
+    }: {
+      message: string;
+      conversationId?: string;
+      projectId?: string;
+    }) => appLaunchEndpoints.sendAIMessage(message, conversationId, projectId),
+    onSuccess: (data) => {
+      if (data?.conversation_id) {
+        queryClient.invalidateQueries({
+          queryKey: appLaunchKeys.conversation(data.conversation_id),
+        });
+        queryClient.invalidateQueries({
+          queryKey: appLaunchKeys.conversations(),
+        });
+      }
     },
   });
 }
