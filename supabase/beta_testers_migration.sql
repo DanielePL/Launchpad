@@ -46,10 +46,10 @@ CREATE TRIGGER trigger_beta_testers_updated_at
 -- Row Level Security (RLS)
 ALTER TABLE public.beta_testers ENABLE ROW LEVEL SECURITY;
 
--- Policy: Nur Admins können beta_testers lesen/schreiben
--- (Anpassen je nach eurer Admin-Logik)
-CREATE POLICY "Admins can manage beta testers" ON public.beta_testers
+-- Policy: Nur authentifizierte Benutzer können beta_testers lesen/schreiben
+CREATE POLICY "Authenticated users can manage beta testers" ON public.beta_testers
   FOR ALL
+  TO authenticated
   USING (true)
   WITH CHECK (true);
 
