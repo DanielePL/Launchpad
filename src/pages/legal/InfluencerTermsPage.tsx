@@ -7,7 +7,7 @@ import gradientBgDark from "@/assets/gradient-bg-dark.png";
 
 export function InfluencerTermsPage() {
   const { theme } = useTheme();
-  const lastUpdated = "1. Februar 2026";
+  const lastUpdated = "February 1, 2026";
 
   return (
     <div
@@ -31,7 +31,7 @@ export function InfluencerTermsPage() {
           <Link to="/creator/login">
             <Button variant="outline" size="sm" className="rounded-xl">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Zum Creator Portal
+              Creator Portal
             </Button>
           </Link>
         </div>
@@ -46,13 +46,13 @@ export function InfluencerTermsPage() {
               <FileText className="h-8 w-8 text-primary" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold mb-2">
-              Allgemeine Geschäftsbedingungen
+              Terms and Conditions
             </h1>
             <p className="text-lg text-muted-foreground">
-              für Influencer & Content Creator
+              for Influencers & Content Creators
             </p>
             <p className="text-sm text-muted-foreground mt-4">
-              Stand: {lastUpdated}
+              Last updated: {lastUpdated}
             </p>
           </div>
 
@@ -60,241 +60,241 @@ export function InfluencerTermsPage() {
           <div className="bg-muted/30 rounded-xl p-6 mb-10">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
               <Scale className="h-5 w-5 text-primary" />
-              Inhaltsverzeichnis
+              Table of Contents
             </h2>
             <nav className="grid md:grid-cols-2 gap-2 text-sm">
-              <a href="#geltungsbereich" className="hover:text-primary transition-colors">1. Geltungsbereich</a>
-              <a href="#vertragsgegenstand" className="hover:text-primary transition-colors">2. Vertragsgegenstand</a>
-              <a href="#pflichten-influencer" className="hover:text-primary transition-colors">3. Pflichten des Influencers</a>
-              <a href="#verguetung" className="hover:text-primary transition-colors">4. Vergütung & Auszahlung</a>
-              <a href="#vertragslaufzeit" className="hover:text-primary transition-colors">5. Vertragslaufzeit & Kündigung</a>
-              <a href="#vertraulichkeit" className="hover:text-primary transition-colors">6. Vertraulichkeit</a>
-              <a href="#haftung" className="hover:text-primary transition-colors">7. Haftung</a>
-              <a href="#datenschutz" className="hover:text-primary transition-colors">8. Datenschutz</a>
-              <a href="#schlussbestimmungen" className="hover:text-primary transition-colors">9. Schlussbestimmungen</a>
+              <a href="#scope" className="hover:text-primary transition-colors">1. Scope of Application</a>
+              <a href="#subject" className="hover:text-primary transition-colors">2. Subject Matter</a>
+              <a href="#obligations" className="hover:text-primary transition-colors">3. Influencer Obligations</a>
+              <a href="#compensation" className="hover:text-primary transition-colors">4. Compensation & Payouts</a>
+              <a href="#term" className="hover:text-primary transition-colors">5. Term & Termination</a>
+              <a href="#confidentiality" className="hover:text-primary transition-colors">6. Confidentiality</a>
+              <a href="#liability" className="hover:text-primary transition-colors">7. Liability</a>
+              <a href="#data-protection" className="hover:text-primary transition-colors">8. Data Protection</a>
+              <a href="#final-provisions" className="hover:text-primary transition-colors">9. Final Provisions</a>
             </nav>
           </div>
 
           {/* Sections */}
           <div className="space-y-10 text-foreground/90">
             {/* Section 1 */}
-            <section id="geltungsbereich">
+            <section id="scope">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold">1</span>
-                Geltungsbereich
+                Scope of Application
               </h2>
               <div className="space-y-3 pl-10">
                 <p>
-                  1.1 Diese Allgemeinen Geschäftsbedingungen (nachfolgend "AGB") gelten für alle Vertragsbeziehungen
-                  zwischen der Prometheus GmbH (nachfolgend "Agentur") und dem Influencer/Content Creator
-                  (nachfolgend "Influencer").
+                  1.1 These Terms and Conditions (hereinafter "Terms") govern all contractual relationships
+                  between PeakForce OÜ (hereinafter "Agency") and the Influencer/Content Creator
+                  (hereinafter "Influencer").
                 </p>
                 <p>
-                  1.2 Abweichende, entgegenstehende oder ergänzende Allgemeine Geschäftsbedingungen des
-                  Influencers werden nur dann und insoweit Vertragsbestandteil, als die Agentur ihrer
-                  Geltung ausdrücklich schriftlich zugestimmt hat.
+                  1.2 Any deviating, conflicting, or supplementary terms and conditions of the
+                  Influencer shall only become part of the contract if and to the extent that the
+                  Agency has expressly agreed to their validity in writing.
                 </p>
                 <p>
-                  1.3 Diese AGB sind Bestandteil jedes individuellen Kooperationsvertrags zwischen der
-                  Agentur und dem Influencer.
+                  1.3 These Terms are an integral part of every individual cooperation agreement
+                  between the Agency and the Influencer.
                 </p>
               </div>
             </section>
 
             {/* Section 2 */}
-            <section id="vertragsgegenstand">
+            <section id="subject">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold">2</span>
-                Vertragsgegenstand
+                Subject Matter
               </h2>
               <div className="space-y-3 pl-10">
                 <p>
-                  2.1 Gegenstand des Vertrags ist die Vermittlung von Werbekooperationen zwischen dem
-                  Influencer und Werbekunden (nachfolgend "Brands") durch die Agentur sowie die
-                  Bereitstellung der LaunchPad-Plattform.
+                  2.1 The subject matter of this agreement is the facilitation of advertising
+                  partnerships between the Influencer and advertising clients (hereinafter "Brands")
+                  by the Agency, as well as the provision of the LaunchPad platform.
                 </p>
                 <p>
-                  2.2 Der Influencer verpflichtet sich, Werbeinhalte gemäß den vereinbarten
-                  Kampagnenbriefings zu erstellen und auf seinen Social-Media-Kanälen zu veröffentlichen.
+                  2.2 The Influencer agrees to create promotional content in accordance with the
+                  agreed campaign briefs and to publish it on their social media channels.
                 </p>
                 <p>
-                  2.3 Die Agentur stellt dem Influencer Zugang zum Creator Portal zur Verfügung,
-                  welches folgende Funktionen umfasst:
+                  2.3 The Agency provides the Influencer with access to the Creator Portal,
+                  which includes the following features:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Übersicht über aktive Kampagnen und Kooperationen</li>
-                  <li>Verwaltung von Referral-Codes und Tracking</li>
-                  <li>Einsicht in Vergütungen und Auszahlungshistorie</li>
-                  <li>Kommunikation mit dem Agentur-Team</li>
+                  <li>Overview of active campaigns and partnerships</li>
+                  <li>Management of referral codes and tracking</li>
+                  <li>Access to compensation details and payout history</li>
+                  <li>Communication with the Agency team</li>
                 </ul>
               </div>
             </section>
 
             {/* Section 3 */}
-            <section id="pflichten-influencer">
+            <section id="obligations">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold">3</span>
-                Pflichten des Influencers
+                Influencer Obligations
               </h2>
               <div className="space-y-3 pl-10">
                 <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 mb-4">
                   <h3 className="font-medium flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
                     <CheckCircle className="h-5 w-5" />
-                    Der Influencer verpflichtet sich:
+                    The Influencer agrees to:
                   </h3>
                   <ul className="space-y-2 text-sm">
-                    <li>a) Werbeinhalte gemäß Briefing termingerecht zu erstellen und zu veröffentlichen</li>
-                    <li>b) Alle werblichen Inhalte ordnungsgemäß als Werbung zu kennzeichnen</li>
-                    <li>c) Keine irreführenden oder falschen Aussagen über Produkte/Dienstleistungen zu machen</li>
-                    <li>d) Die Rechte Dritter (insbesondere Urheberrechte, Markenrechte, Persönlichkeitsrechte) zu wahren</li>
-                    <li>e) Aktuelle und korrekte Kontakt- und Zahlungsdaten bereitzustellen</li>
-                    <li>f) Die Agentur unverzüglich über Änderungen seiner Reichweite oder Kanalstatus zu informieren</li>
+                    <li>a) Create and publish promotional content according to the brief and within agreed timelines</li>
+                    <li>b) Properly disclose all sponsored content as advertising in compliance with applicable laws</li>
+                    <li>c) Not make any misleading or false statements about products or services</li>
+                    <li>d) Respect the rights of third parties (in particular copyrights, trademark rights, personality rights)</li>
+                    <li>e) Provide current and accurate contact and payment information</li>
+                    <li>f) Immediately inform the Agency of any changes to their reach or channel status</li>
                   </ul>
                 </div>
 
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
                   <h3 className="font-medium flex items-center gap-2 text-red-600 dark:text-red-400 mb-2">
                     <Ban className="h-5 w-5" />
-                    Dem Influencer ist untersagt:
+                    The Influencer is prohibited from:
                   </h3>
                   <ul className="space-y-2 text-sm">
-                    <li>a) Manipulation von Reichweiten oder Engagement (z.B. durch Bots, Fake-Follower)</li>
-                    <li>b) Gleichzeitige Kooperationen mit direkten Konkurrenten ohne Zustimmung</li>
-                    <li>c) Weitergabe von vertraulichen Kampagneninformationen an Dritte</li>
-                    <li>d) Eigenständige Änderungen an vereinbarten Inhalten ohne Rücksprache</li>
+                    <li>a) Manipulating reach or engagement metrics (e.g., through bots, fake followers)</li>
+                    <li>b) Simultaneous partnerships with direct competitors without prior consent</li>
+                    <li>c) Disclosing confidential campaign information to third parties</li>
+                    <li>d) Making unauthorized changes to agreed content without prior consultation</li>
                   </ul>
                 </div>
               </div>
             </section>
 
             {/* Section 4 */}
-            <section id="verguetung">
+            <section id="compensation">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold">4</span>
-                Vergütung & Auszahlung
+                Compensation & Payouts
               </h2>
               <div className="space-y-3 pl-10">
                 <p>
-                  4.1 Die Vergütung des Influencers richtet sich nach dem individuell vereinbarten
-                  Vergütungsmodell, welches im jeweiligen Kooperationsvertrag festgelegt wird.
+                  4.1 The Influencer's compensation is determined by the individually agreed
+                  compensation model as specified in the respective cooperation agreement.
                 </p>
                 <p>
-                  4.2 Mögliche Vergütungsmodelle umfassen:
+                  4.2 Possible compensation models include:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li><strong>Feste Vergütung:</strong> Einmalzahlung pro Content-Piece oder Kampagne</li>
-                  <li><strong>Performance-basiert:</strong> Provisionen basierend auf Sales, Downloads oder Registrierungen</li>
-                  <li><strong>Hybrid:</strong> Kombination aus Fixum und Performance-Anteil</li>
+                  <li><strong>Fixed compensation:</strong> One-time payment per content piece or campaign</li>
+                  <li><strong>Performance-based:</strong> Commissions based on sales, downloads, or registrations</li>
+                  <li><strong>Hybrid:</strong> Combination of fixed fee and performance share</li>
                 </ul>
                 <p>
-                  4.3 Auszahlungen erfolgen monatlich zum 15. des Folgemonats, sofern der Mindestauszahlungsbetrag
-                  von 50,00 EUR erreicht wurde. Bei Unterschreitung wird das Guthaben in den Folgemonat übertragen.
+                  4.3 Payouts are processed monthly by the 15th of the following month, provided the
+                  minimum payout threshold of EUR 50.00 has been reached. If the threshold is not met,
+                  the balance will be carried over to the following month.
                 </p>
                 <p>
-                  4.4 Die Auszahlung erfolgt auf das vom Influencer im Creator Portal hinterlegte Bankkonto.
-                  Für Auszahlungen außerhalb des SEPA-Raums können Bankgebühren anfallen, die vom Auszahlungsbetrag
-                  abgezogen werden.
+                  4.4 Payouts are made to the bank account registered by the Influencer in the Creator Portal.
+                  For payouts outside the SEPA area, bank fees may apply and will be deducted from the payout amount.
                 </p>
                 <p>
-                  4.5 Der Influencer ist für die ordnungsgemäße Versteuerung seiner Einnahmen selbst verantwortlich.
+                  4.5 The Influencer is solely responsible for the proper taxation of their earnings.
                 </p>
               </div>
             </section>
 
             {/* Section 5 */}
-            <section id="vertragslaufzeit">
+            <section id="term">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold">5</span>
-                Vertragslaufzeit & Kündigung
+                Term & Termination
               </h2>
               <div className="space-y-3 pl-10">
                 <p>
-                  5.1 Der Rahmenvertrag wird auf unbestimmte Zeit geschlossen und kann von beiden Parteien
-                  mit einer Frist von 30 Tagen zum Monatsende ordentlich gekündigt werden.
+                  5.1 The framework agreement is concluded for an indefinite period and may be
+                  terminated by either party with 30 days' notice to the end of a calendar month.
                 </p>
                 <p>
-                  5.2 Einzelne Kampagnenverträge haben die im jeweiligen Vertrag festgelegte Laufzeit.
+                  5.2 Individual campaign agreements have the duration specified in the respective agreement.
                 </p>
                 <p>
-                  5.3 Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt.
-                  Ein wichtiger Grund liegt insbesondere vor bei:
+                  5.3 The right to extraordinary termination for good cause remains unaffected.
+                  Good cause exists in particular in the event of:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Verstoß gegen die Kennzeichnungspflichten</li>
-                  <li>Manipulation von Reichweiten oder Performance-Daten</li>
-                  <li>Schwerwiegender Rufschädigung der Agentur oder der Brands</li>
-                  <li>Insolvenz oder wesentliche Verschlechterung der wirtschaftlichen Verhältnisse</li>
+                  <li>Violation of disclosure requirements</li>
+                  <li>Manipulation of reach or performance data</li>
+                  <li>Serious damage to the reputation of the Agency or Brands</li>
+                  <li>Insolvency or material deterioration of financial circumstances</li>
                 </ul>
                 <p>
-                  5.4 Bei Kündigung bleiben bereits abgeschlossene Kampagnenverträge von der Kündigung
-                  unberührt und sind vertragsgemäß zu erfüllen.
+                  5.4 Upon termination, already concluded campaign agreements remain unaffected
+                  and must be fulfilled according to their terms.
                 </p>
               </div>
             </section>
 
             {/* Section 6 */}
-            <section id="vertraulichkeit">
+            <section id="confidentiality">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold">6</span>
-                Vertraulichkeit
+                Confidentiality
               </h2>
               <div className="space-y-3 pl-10">
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-4">
                   <div className="flex items-start gap-3">
                     <Shield className="h-5 w-5 text-blue-500 mt-0.5" />
                     <p className="text-sm">
-                      Der Influencer verpflichtet sich, alle ihm im Rahmen der Zusammenarbeit bekannt
-                      gewordenen vertraulichen Informationen streng vertraulich zu behandeln.
+                      The Influencer agrees to keep strictly confidential all confidential information
+                      that becomes known to them in the course of the collaboration.
                     </p>
                   </div>
                 </div>
                 <p>
-                  6.1 Als vertraulich gelten insbesondere:
+                  6.1 The following are considered confidential:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Informationen über geplante, aber noch nicht veröffentlichte Kampagnen</li>
-                  <li>Vergütungsvereinbarungen und Konditionen</li>
-                  <li>Geschäftsgeheimnisse der Brands und der Agentur</li>
-                  <li>Strategische Informationen und Geschäftspläne</li>
+                  <li>Information about planned but not yet published campaigns</li>
+                  <li>Compensation agreements and terms</li>
+                  <li>Trade secrets of the Brands and the Agency</li>
+                  <li>Strategic information and business plans</li>
                 </ul>
                 <p>
-                  6.2 Die Vertraulichkeitsverpflichtung gilt auch über das Vertragsende hinaus für
-                  einen Zeitraum von zwei Jahren.
+                  6.2 The confidentiality obligation shall continue for a period of two years
+                  following the termination of the agreement.
                 </p>
               </div>
             </section>
 
             {/* Section 7 */}
-            <section id="haftung">
+            <section id="liability">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold">7</span>
-                Haftung
+                Liability
               </h2>
               <div className="space-y-3 pl-10">
                 <p>
-                  7.1 Der Influencer haftet für alle Schäden, die durch die Verletzung seiner
-                  vertraglichen Pflichten entstehen, insbesondere für:
+                  7.1 The Influencer shall be liable for all damages arising from the breach of
+                  their contractual obligations, in particular for:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Verstöße gegen das Werbekennzeichnungsrecht</li>
-                  <li>Verletzung von Rechten Dritter in erstellten Inhalten</li>
-                  <li>Falsche oder irreführende Produktaussagen</li>
+                  <li>Violations of advertising disclosure requirements</li>
+                  <li>Infringement of third-party rights in created content</li>
+                  <li>False or misleading product claims</li>
                 </ul>
                 <p>
-                  7.2 Der Influencer stellt die Agentur von allen Ansprüchen Dritter frei, die aus
-                  einer Verletzung seiner vertraglichen Pflichten resultieren.
+                  7.2 The Influencer shall indemnify and hold harmless the Agency against all
+                  third-party claims arising from a breach of their contractual obligations.
                 </p>
                 <p>
-                  7.3 Die Haftung der Agentur ist auf Vorsatz und grobe Fahrlässigkeit beschränkt,
-                  außer bei Verletzung wesentlicher Vertragspflichten.
+                  7.3 The Agency's liability is limited to intent and gross negligence,
+                  except in the case of breach of material contractual obligations.
                 </p>
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mt-4">
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
                     <p className="text-sm">
-                      <strong>Wichtiger Hinweis:</strong> Die Agentur übernimmt keine Haftung für
-                      technische Störungen der Social-Media-Plattformen oder Änderungen in deren
-                      Algorithmen, die die Reichweite der Inhalte beeinflussen können.
+                      <strong>Important Notice:</strong> The Agency assumes no liability for
+                      technical disruptions of social media platforms or changes to their
+                      algorithms that may affect the reach of content.
                     </p>
                   </div>
                 </div>
@@ -302,36 +302,36 @@ export function InfluencerTermsPage() {
             </section>
 
             {/* Section 8 */}
-            <section id="datenschutz">
+            <section id="data-protection">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold">8</span>
-                Datenschutz
+                Data Protection
               </h2>
               <div className="space-y-3 pl-10">
                 <p>
-                  8.1 Die Verarbeitung personenbezogener Daten erfolgt gemäß der
-                  Datenschutz-Grundverordnung (DSGVO) und dem Bundesdatenschutzgesetz (BDSG).
+                  8.1 The processing of personal data is carried out in accordance with the
+                  General Data Protection Regulation (GDPR) and applicable data protection laws.
                 </p>
                 <p>
-                  8.2 Folgende Daten werden von der Agentur verarbeitet:
+                  8.2 The following data is processed by the Agency:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Kontaktdaten (Name, E-Mail, Telefon, Adresse)</li>
-                  <li>Bankverbindung für Auszahlungen</li>
-                  <li>Social-Media-Handles und öffentliche Statistiken</li>
-                  <li>Performance-Daten der Kampagnen</li>
+                  <li>Contact details (name, email, phone, address)</li>
+                  <li>Bank details for payouts</li>
+                  <li>Social media handles and public statistics</li>
+                  <li>Campaign performance data</li>
                 </ul>
                 <p>
-                  8.3 Die Daten werden ausschließlich zur Vertragserfüllung, Abrechnung und
-                  Kampagnenoptimierung verwendet.
+                  8.3 Data is used exclusively for contract fulfillment, billing, and
+                  campaign optimization purposes.
                 </p>
                 <p>
-                  8.4 Der Influencer hat jederzeit das Recht auf Auskunft, Berichtigung, Löschung
-                  und Einschränkung der Verarbeitung seiner Daten.
+                  8.4 The Influencer has the right at any time to request information about,
+                  rectification, deletion, and restriction of processing of their data.
                 </p>
                 <p>
-                  8.5 Weitere Informationen zum Datenschutz finden sich in unserer separaten
-                  Datenschutzerklärung unter{" "}
+                  8.5 Further information on data protection can be found in our separate
+                  Privacy Policy at{" "}
                   <Link to="/legal/privacy" className="text-primary hover:underline">
                     launchpad.app/legal/privacy
                   </Link>.
@@ -340,36 +340,37 @@ export function InfluencerTermsPage() {
             </section>
 
             {/* Section 9 */}
-            <section id="schlussbestimmungen">
+            <section id="final-provisions">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold">9</span>
-                Schlussbestimmungen
+                Final Provisions
               </h2>
               <div className="space-y-3 pl-10">
                 <p>
-                  9.1 Änderungen und Ergänzungen dieser AGB bedürfen der Schriftform. Dies gilt auch
-                  für die Aufhebung dieses Schriftformerfordernisses.
+                  9.1 Amendments and additions to these Terms must be made in writing.
+                  This also applies to the waiver of this written form requirement.
                 </p>
                 <p>
-                  9.2 Sollten einzelne Bestimmungen dieser AGB unwirksam sein oder werden, so wird
-                  die Wirksamkeit der übrigen Bestimmungen hiervon nicht berührt. Anstelle der
-                  unwirksamen Bestimmung tritt eine Regelung, die dem wirtschaftlichen Zweck der
-                  unwirksamen Bestimmung am nächsten kommt.
+                  9.2 Should any provision of these Terms be or become invalid, the validity
+                  of the remaining provisions shall not be affected. In place of the invalid
+                  provision, a regulation shall apply that comes closest to the economic
+                  purpose of the invalid provision.
                 </p>
                 <p>
-                  9.3 Es gilt ausschließlich das Recht der Bundesrepublik Deutschland unter Ausschluss
-                  des UN-Kaufrechts.
+                  9.3 The law of the Republic of Estonia shall apply exclusively,
+                  excluding the UN Convention on Contracts for the International Sale of Goods.
                 </p>
                 <p>
-                  9.4 Gerichtsstand für alle Streitigkeiten aus oder im Zusammenhang mit diesem
-                  Vertrag ist, soweit gesetzlich zulässig, der Sitz der Agentur.
+                  9.4 The exclusive place of jurisdiction for all disputes arising from or
+                  in connection with this agreement shall be the registered office of the Agency,
+                  to the extent permitted by law.
                 </p>
                 <div className="bg-muted/50 rounded-xl p-4 mt-6">
                   <div className="flex items-start gap-3">
                     <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
                     <div className="text-sm text-muted-foreground">
-                      <p className="font-medium text-foreground">Letzte Aktualisierung</p>
-                      <p>Diese AGB wurden zuletzt am {lastUpdated} aktualisiert.</p>
+                      <p className="font-medium text-foreground">Last Update</p>
+                      <p>These Terms were last updated on {lastUpdated}.</p>
                     </div>
                   </div>
                 </div>
@@ -380,15 +381,15 @@ export function InfluencerTermsPage() {
           {/* Contact Section */}
           <div className="mt-12 pt-8 border-t border-border">
             <div className="text-center">
-              <h3 className="font-semibold mb-2">Fragen zu diesen AGB?</h3>
+              <h3 className="font-semibold mb-2">Questions about these Terms?</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Bei Fragen zu diesen Allgemeinen Geschäftsbedingungen wenden Sie sich bitte an:
+                For questions regarding these Terms and Conditions, please contact:
               </p>
               <a
-                href="mailto:legal@prometheus.de"
+                href="mailto:admin@prometheus.coach"
                 className="text-primary hover:underline font-medium"
               >
-                legal@prometheus.de
+                admin@prometheus.coach
               </a>
             </div>
           </div>
@@ -398,14 +399,14 @@ export function InfluencerTermsPage() {
       {/* Footer */}
       <footer className="glass border-t border-border/50 py-6">
         <div className="max-w-4xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Prometheus GmbH. Alle Rechte vorbehalten.</p>
+          <p>&copy; {new Date().getFullYear()} PeakForce OÜ. All rights reserved.</p>
           <div className="mt-2 flex items-center justify-center gap-4">
             <Link to="/legal/privacy" className="hover:text-primary transition-colors">
-              Datenschutz
+              Privacy Policy
             </Link>
             <span>•</span>
             <Link to="/legal/imprint" className="hover:text-primary transition-colors">
-              Impressum
+              Imprint
             </Link>
           </div>
         </div>
