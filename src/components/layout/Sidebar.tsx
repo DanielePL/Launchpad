@@ -164,9 +164,10 @@ const allNavigation: NavItem[] = [
   {
     label: "Security",
     icon: Shield,
-    ownerOnly: true,
+    adminOnly: true,
     children: [
-      { label: "Login Audit", href: "/security/login-audit" },
+      { label: "Activity Log", href: "/security/activity-log" },
+      { label: "Login Audit", href: "/security/login-audit", ownerOnly: true },
     ],
   },
   {
@@ -176,6 +177,7 @@ const allNavigation: NavItem[] = [
     children: [
       { label: "Organization", href: "/settings/organization", adminOnly: true },
       { label: "Team Members", href: "/settings/team", adminOnly: true },
+      { label: "Billing", href: "/settings/billing", adminOnly: true },
       { label: "Notifications", href: "/settings/notifications" },
       { label: "Permissions", href: "/settings/permissions", ownerOnly: true },
     ],

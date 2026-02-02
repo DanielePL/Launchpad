@@ -50,6 +50,7 @@ import { AthleteDetailPage } from "@/pages/lab/AthleteDetailPage";
 
 // Security Pages
 import { LoginAuditPage } from "@/pages/security/LoginAuditPage";
+import { ActivityLogPage } from "@/pages/security/ActivityLogPage";
 
 // Legal Pages (public)
 import { InfluencerTermsPage } from "@/pages/legal/InfluencerTermsPage";
@@ -57,6 +58,10 @@ import { InfluencerTermsPage } from "@/pages/legal/InfluencerTermsPage";
 // Organization Pages
 import { TeamMembersPage } from "@/pages/organization/TeamMembersPage";
 import { OrganizationSettingsPage } from "@/pages/organization/OrganizationSettingsPage";
+
+// Billing Pages
+import { BillingPage } from "@/pages/billing/BillingPage";
+import { PlansPage } from "@/pages/billing/PlansPage";
 
 // Creator Portal Pages
 import CreatorLogin from "@/pages/creator-portal/CreatorLogin";
@@ -344,6 +349,24 @@ export const router = createBrowserRouter([
         ),
       },
 
+      // Billing
+      {
+        path: "settings/billing",
+        element: (
+          <PermissionGuard permission="settings" adminOnly>
+            <BillingPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: "billing/plans",
+        element: (
+          <PermissionGuard permission="settings" adminOnly>
+            <PlansPage />
+          </PermissionGuard>
+        ),
+      },
+
       // Sales
       {
         path: "sales/demo",
@@ -388,12 +411,20 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // Security (Owner only)
+      // Security (Owner/Admin only)
       {
         path: "security/login-audit",
         element: (
           <PermissionGuard ownerOnly>
             <LoginAuditPage />
+          </PermissionGuard>
+        ),
+      },
+      {
+        path: "security/activity-log",
+        element: (
+          <PermissionGuard adminOnly>
+            <ActivityLogPage />
           </PermissionGuard>
         ),
       },

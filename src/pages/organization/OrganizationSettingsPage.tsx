@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/api/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Building2,
   Save,
@@ -11,15 +20,20 @@ import {
   Users,
   CreditCard,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PLAN_LIMITS, type SubscriptionPlan } from "@/api/types/permissions";
 
 export function OrganizationSettingsPage() {
-  const { organization, isOwner } = useAuth();
+  const { organization, isOwner, signOut } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (organization) {
@@ -54,6 +68,36 @@ export function OrganizationSettingsPage() {
       toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteOrganization = async () => {
+    if (!organization || !supabase || deleteConfirmation !== organization.name) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      // Delete the organization (cascade will handle related data via FK constraints)
+      const { error } = await supabase
+        .from("organizations")
+        .delete()
+        .eq("id", organization.id);
+
+      if (error) throw error;
+
+      toast.success("Organization deleted successfully");
+      setShowDeleteDialog(false);
+
+      // Sign out and redirect to signup
+      await signOut();
+      navigate("/signup");
+    } catch (error) {
+      console.error("Error deleting organization:", error);
+      toast.error("Failed to delete organization. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -160,7 +204,9 @@ export function OrganizationSettingsPage() {
                 {isTrialing ? "Free trial" : "Active subscription"}
               </p>
             </div>
-            <Button variant="outline">Manage Billing</Button>
+            <Link to="/settings/billing">
+              <Button variant="outline">Manage Billing</Button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -212,13 +258,74 @@ export function OrganizationSettingsPage() {
                 Permanently delete this organization and all its data. This action
                 cannot be undone.
               </p>
-              <Button variant="destructive" size="sm">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDeleteDialog(true)}
+              >
                 Delete Organization
               </Button>
             </div>
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Delete Organization
+            </DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete the{" "}
+              <strong>{organization.name}</strong> organization and all of its
+              data, including:
+            </DialogDescription>
+          </DialogHeader>
+
+          <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 my-2">
+            <li>All team members and their access</li>
+            <li>All creators and their data</li>
+            <li>All tasks and projects</li>
+            <li>All contracts and deals</li>
+            <li>All files and documents</li>
+          </ul>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Type <strong>{organization.name}</strong> to confirm:
+            </label>
+            <Input
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
+              placeholder={organization.name}
+              className="border-destructive/50 focus:border-destructive"
+            />
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setDeleteConfirmation("");
+              }}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteOrganization}
+              disabled={deleteConfirmation !== organization.name || isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete Organization"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

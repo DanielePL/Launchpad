@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLogLoginAttempt } from "@/hooks/useLoginAudit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, Rocket, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { useTheme } from "next-themes";
 import gradientBg from "@/assets/gradient-bg.jpg";
 import gradientBgDark from "@/assets/gradient-bg-dark.png";
+import type { LoginAuditStatus } from "@/api/types/loginAudit";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,9 +20,20 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
+  const logLoginAttempt = useLogLoginAttempt();
 
   // Get redirect path from state or default to dashboard
   const from = location.state?.from?.pathname || "/";
+
+  // Determine login status based on error message
+  const getLoginStatus = (errorMessage?: string): LoginAuditStatus => {
+    if (!errorMessage) return "success";
+    const lowerError = errorMessage.toLowerCase();
+    if (lowerError.includes("not found") || lowerError.includes("no user")) {
+      return "failed_not_found";
+    }
+    return "failed_wrong_password";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,12 +42,26 @@ export function LoginPage() {
 
     try {
       const { error } = await signIn(email, password);
+
+      // Log the login attempt (fire and forget - don't block login flow)
+      logLoginAttempt.mutate({
+        email,
+        status: getLoginStatus(error?.message),
+        user_agent: navigator.userAgent,
+      });
+
       if (error) {
         setError(error.message);
       } else {
         navigate(from, { replace: true });
       }
     } catch {
+      // Log failed attempt for unexpected errors
+      logLoginAttempt.mutate({
+        email,
+        status: "failed_wrong_password",
+        user_agent: navigator.userAgent,
+      });
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
