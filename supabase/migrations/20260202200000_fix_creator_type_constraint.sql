@@ -4,11 +4,11 @@
 -- Description: Fix Kelly's record and ensure creator_type is always set
 -- =====================================================
 
--- Step 1: Fix records that have influencer fields but wrong creator_type
+-- Step 1: Fix records that have influencer_status set but wrong creator_type
 -- This catches Kelly and any other misclassified influencers
 UPDATE partners
 SET creator_type = 'influencer'
-WHERE (influencer_status IS NOT NULL OR contact_person IS NOT NULL)
+WHERE influencer_status IS NOT NULL
   AND (creator_type IS NULL OR creator_type = 'partner');
 
 -- Step 2: Set default for any remaining NULL records (legacy partners)
