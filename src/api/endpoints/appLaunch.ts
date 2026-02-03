@@ -18,6 +18,7 @@ import type {
   AssetFilters,
   AssetRequirementsStatus,
   RequirementStatus,
+  AssistantSession,
 } from "@/api/types/appLaunch";
 import { SCREENSHOT_REQUIREMENTS } from "@/api/types/appLaunch";
 
@@ -844,6 +845,227 @@ export async function sendAIMessage(
 }
 
 // =============================================================================
+// Assistant Sessions
+// =============================================================================
+
+/**
+ * Create a new assistant session
+ */
+export async function createAssistantSession(): Promise<AssistantSession | null> {
+  if (!supabase) return null;
+
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("Not authenticated");
+
+  const { data: membership } = await supabase
+    .from("organization_members")
+    .select("organization_id")
+    .eq("user_id", userData.user.id)
+    .single();
+
+  if (!membership) throw new Error("No organization found");
+
+  // Create linked conversation
+  const { data: conv } = await supabase
+    .from("ai_conversations")
+    .insert({
+      user_id: userData.user.id,
+      title: "Launch Assistant",
+      context_type: "assistant_session",
+    })
+    .select()
+    .single();
+
+  const { data, error } = await supabase
+    .from("assistant_sessions")
+    .insert({
+      user_id: userData.user.id,
+      organization_id: membership.organization_id,
+      conversation_id: conv?.id,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating assistant session:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+/**
+ * Get the active assistant session for the current user
+ */
+export async function getActiveSession(): Promise<AssistantSession | null> {
+  if (!supabase) return null;
+
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return null;
+
+  const { data } = await supabase
+    .from("assistant_sessions")
+    .select("*")
+    .eq("user_id", userData.user.id)
+    .eq("status", "active")
+    .order("last_interaction_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return data;
+}
+
+/**
+ * Get all paused sessions for the current user
+ */
+export async function getPausedSessions(): Promise<AssistantSession[]> {
+  if (!supabase) return [];
+
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return [];
+
+  const { data } = await supabase
+    .from("assistant_sessions")
+    .select("*")
+    .eq("user_id", userData.user.id)
+    .eq("status", "paused")
+    .order("paused_at", { ascending: false });
+
+  return data || [];
+}
+
+/**
+ * Resume a paused session
+ */
+export async function resumeSession(sessionId: string): Promise<AssistantSession | null> {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("assistant_sessions")
+    .update({
+      status: "active",
+      paused_at: null,
+      last_interaction_at: new Date().toISOString(),
+    })
+    .eq("id", sessionId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error resuming session:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+/**
+ * Pause an active session
+ */
+export async function pauseSession(sessionId: string): Promise<void> {
+  if (!supabase) return;
+
+  const { error } = await supabase
+    .from("assistant_sessions")
+    .update({
+      status: "paused",
+      paused_at: new Date().toISOString(),
+    })
+    .eq("id", sessionId);
+
+  if (error) {
+    console.error("Error pausing session:", error);
+    throw new Error(error.message);
+  }
+}
+
+/**
+ * Update an assistant session
+ */
+export async function updateAssistantSession(
+  sessionId: string,
+  updates: {
+    current_phase?: string;
+    current_step?: number;
+    collected_data?: Record<string, unknown>;
+    generated_content?: Record<string, unknown>;
+    phases_completed?: string[];
+    status?: string;
+    project_id?: string;
+  }
+): Promise<AssistantSession | null> {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("assistant_sessions")
+    .update({
+      ...updates,
+      last_interaction_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", sessionId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating assistant session:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+/**
+ * Send a message to the assistant and get a response
+ */
+export async function sendAssistantMessage(
+  message: string,
+  sessionId: string
+): Promise<{
+  conversation_id: string;
+  message: string;
+  session_update?: Partial<AssistantSession>;
+  usage?: { input_tokens: number; output_tokens: number };
+} | null> {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase.functions.invoke("launch-ai-chat", {
+    body: {
+      message,
+      session_id: sessionId,
+      mode: "assistant",
+    },
+  });
+
+  if (error) {
+    console.error("Error calling Launch AI Assistant:", error);
+    throw new Error(error.message || "Failed to get AI response");
+  }
+
+  return data;
+}
+
+/**
+ * Complete an assistant session
+ */
+export async function completeSession(sessionId: string): Promise<void> {
+  if (!supabase) return;
+
+  const { error } = await supabase
+    .from("assistant_sessions")
+    .update({
+      status: "completed",
+      completed_at: new Date().toISOString(),
+    })
+    .eq("id", sessionId);
+
+  if (error) {
+    console.error("Error completing session:", error);
+    throw new Error(error.message);
+  }
+}
+
+// =============================================================================
 // Export all endpoints
 // =============================================================================
 
@@ -887,4 +1109,14 @@ export const appLaunchEndpoints = {
   deleteAsset,
   reorderAssets,
   getAssetRequirementsStatus,
+
+  // Assistant Sessions
+  createAssistantSession,
+  getActiveSession,
+  getPausedSessions,
+  resumeSession,
+  pauseSession,
+  updateAssistantSession,
+  sendAssistantMessage,
+  completeSession,
 };

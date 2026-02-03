@@ -68,7 +68,7 @@ import { AppLaunchDashboard } from "@/pages/app-launch/AppLaunchDashboard";
 import { AppProjectPage } from "@/pages/app-launch/AppProjectPage";
 import { AIAssistantPage } from "@/pages/app-launch/AIAssistantPage";
 import { AssetStudioPage } from "@/pages/app-launch/AssetStudioPage";
-import { OnboardingFlow } from "@/pages/app-launch/OnboardingFlow";
+import { LaunchAssistantPage } from "@/pages/app-launch/LaunchAssistantPage";
 
 // Creator Portal Pages
 import CreatorLogin from "@/pages/creator-portal/CreatorLogin";
@@ -425,7 +425,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "app-launch/new",
-        element: <OnboardingFlow />,
+        element: <LaunchAssistantPage />,
       },
       {
         path: "app-launch/project/:id",

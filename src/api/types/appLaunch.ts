@@ -567,3 +567,91 @@ export const FEATURE_GRAPHIC_REQUIREMENTS = {
   height: 500,
   required: true,
 };
+
+// -----------------------------------------------------------------------------
+// AI Launch Assistant Session Types
+// -----------------------------------------------------------------------------
+
+export type AssistantPhase =
+  | "discovery"
+  | "code_source"
+  | "tech_analysis"
+  | "store_presence"
+  | "store_listings"
+  | "assets"
+  | "compliance"
+  | "beta"
+  | "release";
+
+export type SessionStatus = "active" | "paused" | "completed" | "abandoned";
+
+export interface CodeSource {
+  type: "github" | "local" | "none";
+  url?: string;
+  path?: string;
+}
+
+export interface CollectedData {
+  app_name?: string;
+  description?: string;
+  code_source?: CodeSource;
+  tech_stack?: string;
+  platforms?: Platform[];
+  store_accounts?: { google?: boolean; apple?: boolean };
+  icon_url?: string;
+  package_name?: string;
+  bundle_id?: string;
+  repo_analysis?: {
+    detected_stack?: string;
+    dependencies?: string[];
+    permissions?: string[];
+  };
+}
+
+export interface GeneratedContent {
+  short_description?: string;
+  full_description?: string;
+  keywords?: string[];
+  privacy_policy?: string;
+  release_notes?: string;
+}
+
+export interface AssistantSession {
+  id: string;
+  project_id: string | null;
+  user_id: string;
+  organization_id: string;
+  current_phase: AssistantPhase;
+  current_step: number;
+  collected_data: CollectedData;
+  generated_content: GeneratedContent;
+  status: SessionStatus;
+  phases_completed: AssistantPhase[];
+  conversation_id: string | null;
+  started_at: string;
+  paused_at: string | null;
+  completed_at: string | null;
+  last_interaction_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Phase Configuration for UI
+export interface AssistantPhaseConfig {
+  id: AssistantPhase;
+  label: string;
+  icon: string;
+  description: string;
+}
+
+export const ASSISTANT_PHASES: AssistantPhaseConfig[] = [
+  { id: "discovery", label: "Basics", icon: "Sparkles", description: "App-Name und Beschreibung" },
+  { id: "code_source", label: "Code", icon: "Code", description: "Code-Quelle festlegen" },
+  { id: "tech_analysis", label: "Tech Stack", icon: "Cpu", description: "Technologie erkennen" },
+  { id: "store_presence", label: "Accounts", icon: "Store", description: "Developer Accounts" },
+  { id: "store_listings", label: "Store Listing", icon: "FileText", description: "Beschreibungen generieren" },
+  { id: "assets", label: "Assets", icon: "Image", description: "Icons und Screenshots" },
+  { id: "compliance", label: "Compliance", icon: "Shield", description: "Privacy Policy" },
+  { id: "beta", label: "Beta", icon: "Users", description: "Test-Strategie" },
+  { id: "release", label: "Release", icon: "Rocket", description: "Launch vorbereiten" },
+];

@@ -132,6 +132,208 @@ Today's date is ${new Date().toISOString().split('T')[0]}. Keep in mind that sto
 - Always end with a helpful next step or question when appropriate`;
 
 // =============================================================================
+// ASSISTANT MODE SYSTEM PROMPT
+// =============================================================================
+
+const ASSISTANT_MODE_PROMPT = `
+## Process-Oriented Assistant Mode
+
+You are now in **Assistant Mode** - a step-by-step guided experience to help users launch their app.
+
+### Core Principles
+1. **One Question at a Time**: Never overwhelm the user. Ask ONE focused question, then wait for their answer.
+2. **Maximum Automation**: After each answer, use tools to update the session state and generate content automatically.
+3. **Visual Progress**: Reference the current phase so users know where they are in the process.
+4. **German Language**: Respond in German unless the user writes in another language.
+
+### Phases (in order):
+1. **discovery**: Collect app name and short description
+2. **code_source**: Ask where the code is (GitHub/Local/None) - offer buttons
+3. **tech_analysis**: If GitHub provided, analyze repo; otherwise ask about tech stack
+4. **store_presence**: Check if they have Google Play Console / Apple Developer accounts
+5. **store_listings**: Generate optimized store descriptions
+6. **assets**: Guide icon upload with auto-resize info
+7. **compliance**: Generate privacy policy
+8. **beta**: Define test strategy
+9. **release**: Set timeline and prepare launch
+
+### Rules for Each Response:
+1. Start with a brief acknowledgment of their last answer (if applicable)
+2. Update session state using the update_assistant_session tool
+3. Ask the NEXT single question
+4. When possible, offer button-style options (list them clearly)
+5. Show current progress: "📍 Phase: [current phase] (Schritt X von Y)"
+
+### Button Format:
+When offering choices, format them clearly:
+\`\`\`
+Wähle eine Option:
+• **Option A** - Kurze Beschreibung
+• **Option B** - Kurze Beschreibung
+• **Option C** - Kurze Beschreibung
+\`\`\`
+
+### Progress Indicator Format:
+Always include at the end of your response:
+\`\`\`
+---
+📍 **[Phase Name]** | Schritt X
+\`\`\`
+
+### Example Flow (Discovery Phase):
+User starts session →
+"Willkommen! Lass uns deine App launchen. 🚀
+
+Wie heißt deine App?
+
+---
+📍 **Basics** | Schritt 1"
+
+User: "FitTracker"
+→ Update session with app_name
+"Super Name! **FitTracker** klingt gut.
+
+Beschreibe kurz, was deine App macht (1-2 Sätze reichen):
+
+---
+📍 **Basics** | Schritt 2"
+`;
+
+// =============================================================================
+// GITHUB ANALYSIS HELPERS
+// =============================================================================
+
+interface RepoAnalysis {
+  detected_stack: string;
+  framework: string;
+  dependencies: string[];
+  platforms: string[];
+  permissions: string[];
+  has_android: boolean;
+  has_ios: boolean;
+}
+
+async function fetchGitHubFile(owner: string, repo: string, path: string, branch = "main"): Promise<string | null> {
+  try {
+    const url = \`https://raw.githubusercontent.com/\${owner}/\${repo}/\${branch}/\${path}\`;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    return await response.text();
+  } catch {
+    return null;
+  }
+}
+
+async function analyzeGitHubRepo(repoUrl: string, branch = "main"): Promise<RepoAnalysis> {
+  // Parse owner/repo from URL
+  const match = repoUrl.match(/github\\.com\\/([^\\/]+)\\/([^\\/]+)/);
+  if (!match) {
+    return {
+      detected_stack: "unknown",
+      framework: "unknown",
+      dependencies: [],
+      platforms: [],
+      permissions: [],
+      has_android: false,
+      has_ios: false,
+    };
+  }
+
+  const [_, owner, repoName] = match;
+  const repo = repoName.replace(/\\.git$/, "");
+
+  // Fetch key files in parallel
+  const [packageJson, pubspecYaml, appJson, buildGradle, podfile] = await Promise.all([
+    fetchGitHubFile(owner, repo, "package.json", branch),
+    fetchGitHubFile(owner, repo, "pubspec.yaml", branch),
+    fetchGitHubFile(owner, repo, "app.json", branch),
+    fetchGitHubFile(owner, repo, "android/app/build.gradle", branch),
+    fetchGitHubFile(owner, repo, "ios/Podfile", branch),
+  ]);
+
+  const result: RepoAnalysis = {
+    detected_stack: "unknown",
+    framework: "unknown",
+    dependencies: [],
+    platforms: [],
+    permissions: [],
+    has_android: !!buildGradle,
+    has_ios: !!podfile,
+  };
+
+  // Detect React Native
+  if (packageJson) {
+    try {
+      const pkg = JSON.parse(packageJson);
+      const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+      if (deps["react-native"]) {
+        result.detected_stack = "react_native";
+        result.framework = "React Native";
+        result.dependencies = Object.keys(deps).filter(d =>
+          d.startsWith("react") || d.startsWith("@react") || d.includes("native")
+        );
+      } else if (deps["expo"]) {
+        result.detected_stack = "expo";
+        result.framework = "Expo (React Native)";
+        result.dependencies = Object.keys(deps).filter(d =>
+          d.startsWith("expo") || d.startsWith("react")
+        );
+      }
+    } catch {
+      // Invalid JSON
+    }
+  }
+
+  // Detect Flutter
+  if (pubspecYaml && !result.framework.includes("React")) {
+    result.detected_stack = "flutter";
+    result.framework = "Flutter";
+    // Extract dependencies from pubspec
+    const depMatch = pubspecYaml.match(/dependencies:[\\s\\S]*?(?=dev_dependencies:|$)/);
+    if (depMatch) {
+      const deps = depMatch[0].match(/^\\s{2}\\w+:/gm);
+      result.dependencies = deps ? deps.map(d => d.trim().replace(":", "")) : [];
+    }
+  }
+
+  // Determine platforms
+  if (result.has_android) result.platforms.push("android");
+  if (result.has_ios) result.platforms.push("ios");
+
+  return result;
+}
+
+function generateStoreDescription(
+  appName: string,
+  appDescription: string,
+  features: string[] = [],
+  locale = "de"
+): { short_description: string; full_description: string; keywords: string[] } {
+  // Generate a short description (max 80 chars for Google Play)
+  const short_description = appDescription.length <= 80
+    ? appDescription
+    : appDescription.substring(0, 77) + "...";
+
+  // Generate full description with features
+  let full_description = \`**\${appName}**\\n\\n\${appDescription}\\n\\n\`;
+
+  if (features.length > 0) {
+    full_description += locale === "de" ? "**Features:**\\n" : "**Features:**\\n";
+    features.forEach(f => {
+      full_description += \`• \${f}\\n\`;
+    });
+  }
+
+  // Extract keywords from description
+  const words = (appDescription + " " + features.join(" ")).toLowerCase().split(/\\s+/);
+  const stopWords = new Set(["und", "oder", "der", "die", "das", "ein", "eine", "für", "mit", "von", "zu", "the", "a", "an", "and", "or", "for", "with"]);
+  const keywords = [...new Set(words.filter(w => w.length > 3 && !stopWords.has(w)))].slice(0, 10);
+
+  return { short_description, full_description, keywords };
+}
+
+// =============================================================================
 // TOOL DEFINITIONS
 // =============================================================================
 
@@ -148,6 +350,86 @@ const TOOLS: Anthropic.Tool[] = [
         }
       },
       required: ["project_id"]
+    }
+  },
+  {
+    name: "analyze_github_repo",
+    description: "Analyze a GitHub repository to detect tech stack, dependencies, and permissions. Use this when the user provides a GitHub URL.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        repo_url: {
+          type: "string",
+          description: "The GitHub repository URL (e.g., https://github.com/owner/repo)"
+        },
+        branch: {
+          type: "string",
+          description: "The branch to analyze (default: main)"
+        }
+      },
+      required: ["repo_url"]
+    }
+  },
+  {
+    name: "generate_store_description",
+    description: "Generate optimized app store descriptions (short and full) based on app information",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        app_name: {
+          type: "string",
+          description: "Name of the app"
+        },
+        app_description: {
+          type: "string",
+          description: "Brief description of what the app does"
+        },
+        features: {
+          type: "array",
+          items: { type: "string" },
+          description: "List of key features"
+        },
+        locale: {
+          type: "string",
+          description: "Target locale (default: de for German)"
+        }
+      },
+      required: ["app_name", "app_description"]
+    }
+  },
+  {
+    name: "update_assistant_session",
+    description: "Update the assistant session state with collected data or move to the next phase. Use this after the user answers questions.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        session_id: {
+          type: "string",
+          description: "The session ID"
+        },
+        phase: {
+          type: "string",
+          description: "Move to this phase",
+          enum: ["discovery", "code_source", "tech_analysis", "store_presence", "store_listings", "assets", "compliance", "beta", "release"]
+        },
+        step: {
+          type: "number",
+          description: "Current step within the phase"
+        },
+        collected_data: {
+          type: "object",
+          description: "Data to merge into collected_data"
+        },
+        generated_content: {
+          type: "object",
+          description: "AI-generated content to store"
+        },
+        mark_phase_completed: {
+          type: "string",
+          description: "Mark this phase as completed"
+        }
+      },
+      required: ["session_id"]
     }
   },
   {
@@ -380,6 +662,84 @@ async function handleToolCall(
         target_audience?: string;
       });
       return JSON.stringify({ keywords });
+    }
+
+    case "analyze_github_repo": {
+      try {
+        const analysis = await analyzeGitHubRepo(
+          toolInput.repo_url as string,
+          (toolInput.branch as string) || "main"
+        );
+        return JSON.stringify(analysis);
+      } catch (error) {
+        return JSON.stringify({
+          error: "Failed to analyze repository",
+          message: error instanceof Error ? error.message : "Unknown error"
+        });
+      }
+    }
+
+    case "generate_store_description": {
+      const result = generateStoreDescription(
+        toolInput.app_name as string,
+        toolInput.app_description as string,
+        (toolInput.features as string[]) || [],
+        (toolInput.locale as string) || "de"
+      );
+      return JSON.stringify(result);
+    }
+
+    case "update_assistant_session": {
+      const sessionId = toolInput.session_id as string;
+      const updates: Record<string, unknown> = {
+        last_interaction_at: new Date().toISOString(),
+      };
+
+      if (toolInput.phase) {
+        updates.current_phase = toolInput.phase;
+      }
+      if (toolInput.step !== undefined) {
+        updates.current_step = toolInput.step;
+      }
+
+      // Get current session to merge data
+      const { data: currentSession } = await supabase
+        .from("assistant_sessions")
+        .select("collected_data, generated_content, phases_completed")
+        .eq("id", sessionId)
+        .single();
+
+      if (toolInput.collected_data) {
+        updates.collected_data = {
+          ...(currentSession?.collected_data || {}),
+          ...(toolInput.collected_data as Record<string, unknown>),
+        };
+      }
+
+      if (toolInput.generated_content) {
+        updates.generated_content = {
+          ...(currentSession?.generated_content || {}),
+          ...(toolInput.generated_content as Record<string, unknown>),
+        };
+      }
+
+      if (toolInput.mark_phase_completed) {
+        const completed = currentSession?.phases_completed || [];
+        if (!completed.includes(toolInput.mark_phase_completed)) {
+          updates.phases_completed = [...completed, toolInput.mark_phase_completed];
+        }
+      }
+
+      const { error } = await supabase
+        .from("assistant_sessions")
+        .update(updates)
+        .eq("id", sessionId);
+
+      if (error) {
+        return JSON.stringify({ error: error.message });
+      }
+
+      return JSON.stringify({ success: true, updates });
     }
 
     default:
@@ -663,7 +1023,7 @@ serve(async (req) => {
     }
 
     // Parse request
-    const { conversation_id, message, project_id } = await req.json();
+    const { conversation_id, message, project_id, session_id, mode } = await req.json();
 
     if (!message) {
       return new Response(JSON.stringify({ error: "Message is required" }), {
@@ -736,11 +1096,44 @@ serve(async (req) => {
       }
     }
 
+    // Get assistant session context if in assistant mode
+    let assistantContext = "";
+    let actualSessionId = session_id;
+    if (mode === "assistant" && session_id) {
+      const { data: session } = await supabaseClient
+        .from("assistant_sessions")
+        .select("*")
+        .eq("id", session_id)
+        .single();
+
+      if (session) {
+        // Use the session's conversation_id if available
+        if (session.conversation_id && !conversation_id) {
+          convId = session.conversation_id;
+        }
+
+        assistantContext = `\n\n## Assistant Session Context
+- Session ID: ${session.id}
+- Current Phase: ${session.current_phase}
+- Current Step: ${session.current_step}
+- Phases Completed: ${session.phases_completed.join(", ") || "none"}
+- Collected Data: ${JSON.stringify(session.collected_data)}
+- Generated Content: ${JSON.stringify(session.generated_content)}
+
+IMPORTANT: You are in Assistant Mode. Use the session_id "${session.id}" when calling update_assistant_session.`;
+      }
+    }
+
+    // Build system prompt based on mode
+    const systemPrompt = mode === "assistant"
+      ? SYSTEM_PROMPT + ASSISTANT_MODE_PROMPT + projectContext + assistantContext
+      : SYSTEM_PROMPT + projectContext;
+
     // Call Claude
     let response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 4096,
-      system: SYSTEM_PROMPT + projectContext,
+      system: systemPrompt,
       tools: TOOLS,
       messages,
     });
@@ -780,7 +1173,7 @@ serve(async (req) => {
       response = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 4096,
-        system: SYSTEM_PROMPT + projectContext,
+        system: systemPrompt,
         tools: TOOLS,
         messages,
       });
