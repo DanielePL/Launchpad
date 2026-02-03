@@ -69,6 +69,64 @@ export type ConversationStatus = "active" | "archived" | "resolved";
 export type MessageRole = "user" | "assistant" | "system";
 
 // -----------------------------------------------------------------------------
+// Onboarding & Discovery
+// -----------------------------------------------------------------------------
+
+export type ExperienceLevel = "beginner" | "intermediate" | "pro";
+
+export type AppType =
+  | "game"
+  | "utility"
+  | "social"
+  | "business"
+  | "education"
+  | "health"
+  | "entertainment"
+  | "productivity"
+  | "other";
+
+export type TechStack =
+  | "react_native"
+  | "flutter"
+  | "swift"
+  | "kotlin"
+  | "native_both"
+  | "ionic"
+  | "xamarin"
+  | "other";
+
+export type DevelopmentStatus = "idea" | "development" | "ready";
+
+export interface OnboardingAnswers {
+  app_name: string;
+  app_type: AppType;
+  app_description?: string;
+  tech_stack: TechStack;
+  platforms: Platform[];
+  development_status: DevelopmentStatus;
+  has_published_before: boolean;
+  has_play_console: boolean | null; // null = "Was ist das?"
+  has_apple_dev: boolean | null;
+  experience_level: ExperienceLevel; // Auto-detected from answers
+}
+
+export interface OnboardingQuestion {
+  id: string;
+  question: string;
+  type: "single" | "multi" | "text" | "boolean";
+  options?: { value: string; label: string; description?: string }[];
+  helpText?: string;
+  condition?: (answers: Partial<OnboardingAnswers>) => boolean;
+}
+
+export interface GeneratedChecklist {
+  items: Omit<ChecklistItem, "id" | "project_id" | "created_at">[];
+  estimated_days: number;
+  critical_items: string[]; // item_keys that are most important
+  tips_for_level: string[]; // Tips based on experience level
+}
+
+// -----------------------------------------------------------------------------
 // App Project
 // -----------------------------------------------------------------------------
 
