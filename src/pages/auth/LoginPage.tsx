@@ -25,25 +25,11 @@ export function LoginPage() {
   // Get redirect path from state or default to dashboard
   const from = location.state?.from?.pathname || "/";
 
-  // Dev login credentials
-  const DEV_EMAIL = "danielepauli@gmail.com";
-  const DEV_PASSWORD = "Ichiban_11";
-
-  const handleDevLogin = async () => {
-    setError("");
-    setIsLoading(true);
-    try {
-      const { error } = await signIn(DEV_EMAIL, DEV_PASSWORD);
-      if (error) {
-        setError(error.message);
-      } else {
-        navigate(from, { replace: true });
-      }
-    } catch {
-      setError("Dev login failed");
-    } finally {
-      setIsLoading(false);
-    }
+  // Dev login - fills form with test credentials (credentials not hardcoded for security)
+  const handleDevLogin = () => {
+    setEmail("danielepauli@gmail.com");
+    setPassword("");
+    // User still needs to enter password manually
   };
 
   // Determine login status based on error message

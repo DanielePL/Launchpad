@@ -75,11 +75,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Provider Component
 // =============================================================================
 
+// Quick sync check if there's a session in localStorage
+const hasStoredSession = (): boolean => {
+  try {
+    const stored = localStorage.getItem("sb-aejfwazjcqxmrwirpwde-auth-token");
+    return !!stored;
+  } catch {
+    return false;
+  }
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Auth State
+  // Auth State - start with false if no stored session (fast path to login)
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(hasStoredSession()); // Only load if might have session
 
   // Organization State
   const [organization, setOrganization] = useState<Organization | null>(null);
