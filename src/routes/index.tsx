@@ -1,85 +1,82 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { CreatorProtectedRoute } from "./CreatorProtectedRoute";
-
 import { PermissionGuard } from "./RoleGuard";
-import { CreatorLayout } from "@/components/creator-portal/CreatorLayout";
+import { Rocket } from "lucide-react";
 
-// Auth Pages
+// Lazy loading wrapper
+const LazyLoad = ({ children }: { children: React.ReactNode }) => (
+  <Suspense
+    fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Rocket className="h-8 w-8 text-primary animate-pulse" />
+      </div>
+    }
+  >
+    {children}
+  </Suspense>
+);
+
+// Auth Pages - loaded immediately (critical path)
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { SignUpPage } from "@/pages/auth/SignUpPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
-
-// Onboarding Pages
 import { CreateOrganizationPage } from "@/pages/onboarding/CreateOrganizationPage";
-
-// Admin Pages
-import { DashboardPage } from "@/pages/dashboard/DashboardPage";
-import { CostsOverviewPage } from "@/pages/costs/CostsOverviewPage";
-import { FixedCostsPage } from "@/pages/costs/FixedCostsPage";
-import { RevenueOverviewPage } from "@/pages/revenue/RevenueOverviewPage";
-import { BreakEvenPage } from "@/pages/analytics/BreakEvenPage";
-import { PartnersListPage } from "@/pages/partners/PartnersListPage";
-import { PartnerDetailPage } from "@/pages/partners/PartnerDetailPage";
-import { PayoutsPage } from "@/pages/partners/PayoutsPage";
-import { EmployeesPage } from "@/pages/employees/EmployeesPage";
-import { UsersListPage } from "@/pages/users/UsersListPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
-import { SalesDemoPage } from "@/pages/sales/SalesDemoPage";
-import { SalesCRMPage } from "@/pages/sales/SalesCRMPage";
 
-import { AdminPermissionsPage } from "@/pages/settings/AdminPermissionsPage";
-import { PerformanceDashboard } from "@/pages/performance/PerformanceDashboard";
-import { BetaManagementPage } from "@/pages/beta/BetaManagementPage";
-import { CrashesPage } from "@/pages/crashes/CrashesPage";
-import { ContractsPage } from "@/pages/contracts/ContractsPage";
-import { DealsPage } from "@/pages/deals/DealsPage";
-import { AmbassadorControlPage } from "@/pages/ambassadors/AmbassadorControlPage";
-import { SupabaseHealthPage } from "@/pages/health/SupabaseHealthPage";
-import { TeamStoragePage } from "@/pages/storage/TeamStoragePage";
+// Lazy loaded pages - only load when needed
+const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage").then(m => ({ default: m.DashboardPage })));
+const CostsOverviewPage = lazy(() => import("@/pages/costs/CostsOverviewPage").then(m => ({ default: m.CostsOverviewPage })));
+const FixedCostsPage = lazy(() => import("@/pages/costs/FixedCostsPage").then(m => ({ default: m.FixedCostsPage })));
+const RevenueOverviewPage = lazy(() => import("@/pages/revenue/RevenueOverviewPage").then(m => ({ default: m.RevenueOverviewPage })));
+const BreakEvenPage = lazy(() => import("@/pages/analytics/BreakEvenPage").then(m => ({ default: m.BreakEvenPage })));
+const PartnersListPage = lazy(() => import("@/pages/partners/PartnersListPage").then(m => ({ default: m.PartnersListPage })));
+const PartnerDetailPage = lazy(() => import("@/pages/partners/PartnerDetailPage").then(m => ({ default: m.PartnerDetailPage })));
+const PayoutsPage = lazy(() => import("@/pages/partners/PayoutsPage").then(m => ({ default: m.PayoutsPage })));
+const EmployeesPage = lazy(() => import("@/pages/employees/EmployeesPage").then(m => ({ default: m.EmployeesPage })));
+const UsersListPage = lazy(() => import("@/pages/users/UsersListPage").then(m => ({ default: m.UsersListPage })));
+const SalesDemoPage = lazy(() => import("@/pages/sales/SalesDemoPage").then(m => ({ default: m.SalesDemoPage })));
+const SalesCRMPage = lazy(() => import("@/pages/sales/SalesCRMPage").then(m => ({ default: m.SalesCRMPage })));
+const AdminPermissionsPage = lazy(() => import("@/pages/settings/AdminPermissionsPage").then(m => ({ default: m.AdminPermissionsPage })));
+const PerformanceDashboard = lazy(() => import("@/pages/performance/PerformanceDashboard").then(m => ({ default: m.PerformanceDashboard })));
+const BetaManagementPage = lazy(() => import("@/pages/beta/BetaManagementPage").then(m => ({ default: m.BetaManagementPage })));
+const CrashesPage = lazy(() => import("@/pages/crashes/CrashesPage").then(m => ({ default: m.CrashesPage })));
+const ContractsPage = lazy(() => import("@/pages/contracts/ContractsPage").then(m => ({ default: m.ContractsPage })));
+const DealsPage = lazy(() => import("@/pages/deals/DealsPage").then(m => ({ default: m.DealsPage })));
+const AmbassadorControlPage = lazy(() => import("@/pages/ambassadors/AmbassadorControlPage").then(m => ({ default: m.AmbassadorControlPage })));
+const SupabaseHealthPage = lazy(() => import("@/pages/health/SupabaseHealthPage").then(m => ({ default: m.SupabaseHealthPage })));
+const TeamStoragePage = lazy(() => import("@/pages/storage/TeamStoragePage").then(m => ({ default: m.TeamStoragePage })));
+const TasksPage = lazy(() => import("@/pages/tasks/TasksPage").then(m => ({ default: m.TasksPage })));
+const ProjectsPage = lazy(() => import("@/pages/tasks/ProjectsPage").then(m => ({ default: m.ProjectsPage })));
+const LabDashboardPage = lazy(() => import("@/pages/lab/LabDashboardPage").then(m => ({ default: m.LabDashboardPage })));
+const AthletesListPage = lazy(() => import("@/pages/lab/AthletesListPage").then(m => ({ default: m.AthletesListPage })));
+const AthleteDetailPage = lazy(() => import("@/pages/lab/AthleteDetailPage").then(m => ({ default: m.AthleteDetailPage })));
+const LoginAuditPage = lazy(() => import("@/pages/security/LoginAuditPage").then(m => ({ default: m.LoginAuditPage })));
+const ActivityLogPage = lazy(() => import("@/pages/security/ActivityLogPage").then(m => ({ default: m.ActivityLogPage })));
+const InfluencerTermsPage = lazy(() => import("@/pages/legal/InfluencerTermsPage").then(m => ({ default: m.InfluencerTermsPage })));
+const TeamMembersPage = lazy(() => import("@/pages/organization/TeamMembersPage").then(m => ({ default: m.TeamMembersPage })));
+const OrganizationSettingsPage = lazy(() => import("@/pages/organization/OrganizationSettingsPage").then(m => ({ default: m.OrganizationSettingsPage })));
+const BillingPage = lazy(() => import("@/pages/billing/BillingPage").then(m => ({ default: m.BillingPage })));
+const PlansPage = lazy(() => import("@/pages/billing/PlansPage").then(m => ({ default: m.PlansPage })));
+const AppLaunchDashboard = lazy(() => import("@/pages/app-launch/AppLaunchDashboard").then(m => ({ default: m.AppLaunchDashboard })));
+const AppProjectPage = lazy(() => import("@/pages/app-launch/AppProjectPage").then(m => ({ default: m.AppProjectPage })));
+const AIAssistantPage = lazy(() => import("@/pages/app-launch/AIAssistantPage").then(m => ({ default: m.AIAssistantPage })));
+const AssetStudioPage = lazy(() => import("@/pages/app-launch/AssetStudioPage").then(m => ({ default: m.AssetStudioPage })));
+const LaunchAssistantPage = lazy(() => import("@/pages/app-launch/LaunchAssistantPage").then(m => ({ default: m.LaunchAssistantPage })));
 
-// Task Pages
-import { TasksPage } from "@/pages/tasks/TasksPage";
-import { ProjectsPage } from "@/pages/tasks/ProjectsPage";
-
-// Lab Pages
-import { LabDashboardPage } from "@/pages/lab/LabDashboardPage";
-import { AthletesListPage } from "@/pages/lab/AthletesListPage";
-import { AthleteDetailPage } from "@/pages/lab/AthleteDetailPage";
-
-// Security Pages
-import { LoginAuditPage } from "@/pages/security/LoginAuditPage";
-import { ActivityLogPage } from "@/pages/security/ActivityLogPage";
-
-// Legal Pages (public)
-import { InfluencerTermsPage } from "@/pages/legal/InfluencerTermsPage";
-
-// Organization Pages
-import { TeamMembersPage } from "@/pages/organization/TeamMembersPage";
-import { OrganizationSettingsPage } from "@/pages/organization/OrganizationSettingsPage";
-
-// Billing Pages
-import { BillingPage } from "@/pages/billing/BillingPage";
-import { PlansPage } from "@/pages/billing/PlansPage";
-
-// App Launch Pages
-import { AppLaunchDashboard } from "@/pages/app-launch/AppLaunchDashboard";
-import { AppProjectPage } from "@/pages/app-launch/AppProjectPage";
-import { AIAssistantPage } from "@/pages/app-launch/AIAssistantPage";
-import { AssetStudioPage } from "@/pages/app-launch/AssetStudioPage";
-import { LaunchAssistantPage } from "@/pages/app-launch/LaunchAssistantPage";
-
-// Creator Portal Pages
-import CreatorLogin from "@/pages/creator-portal/CreatorLogin";
-import CreatorDashboard from "@/pages/creator-portal/CreatorDashboard";
-import ReferralsPage from "@/pages/creator-portal/ReferralsPage";
-import CreatorPayoutsPage from "@/pages/creator-portal/PayoutsPage";
-import CreatorSettings from "@/pages/creator-portal/CreatorSettings";
+// Creator Portal - lazy loaded
+const CreatorLayout = lazy(() => import("@/components/creator-portal/CreatorLayout").then(m => ({ default: m.CreatorLayout })));
+const CreatorLogin = lazy(() => import("@/pages/creator-portal/CreatorLogin"));
+const CreatorDashboard = lazy(() => import("@/pages/creator-portal/CreatorDashboard"));
+const ReferralsPage = lazy(() => import("@/pages/creator-portal/ReferralsPage"));
+const CreatorPayoutsPage = lazy(() => import("@/pages/creator-portal/PayoutsPage"));
+const CreatorSettings = lazy(() => import("@/pages/creator-portal/CreatorSettings"));
 
 export const router = createBrowserRouter([
-  // Auth Routes (public)
+  // Auth Routes (public) - NOT lazy loaded for instant access
   {
     path: "/login",
     element: <LoginPage />,
@@ -97,10 +94,10 @@ export const router = createBrowserRouter([
     element: <ResetPasswordPage />,
   },
 
-  // Legal Routes (public - no login required)
+  // Legal Routes (public)
   {
     path: "/legal/influencer-terms",
-    element: <InfluencerTermsPage />,
+    element: <LazyLoad><InfluencerTermsPage /></LazyLoad>,
   },
 
   // Onboarding Routes
@@ -109,7 +106,7 @@ export const router = createBrowserRouter([
     element: <CreateOrganizationPage />,
   },
 
-  // Main App Routes (protected)
+  // Main App Routes (protected + lazy)
   {
     path: "/",
     element: (
@@ -122,7 +119,7 @@ export const router = createBrowserRouter([
         index: true,
         element: (
           <PermissionGuard permission="dashboard">
-            <DashboardPage />
+            <LazyLoad><DashboardPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -132,7 +129,7 @@ export const router = createBrowserRouter([
         path: "costs",
         element: (
           <PermissionGuard permission="costs">
-            <CostsOverviewPage />
+            <LazyLoad><CostsOverviewPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -140,7 +137,7 @@ export const router = createBrowserRouter([
         path: "costs/fixed",
         element: (
           <PermissionGuard permission="costs">
-            <FixedCostsPage />
+            <LazyLoad><FixedCostsPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -148,7 +145,7 @@ export const router = createBrowserRouter([
         path: "costs/services",
         element: (
           <PermissionGuard permission="costs">
-            <CostsOverviewPage />
+            <LazyLoad><CostsOverviewPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -156,7 +153,7 @@ export const router = createBrowserRouter([
         path: "costs/users",
         element: (
           <PermissionGuard permission="costs">
-            <CostsOverviewPage />
+            <LazyLoad><CostsOverviewPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -166,7 +163,7 @@ export const router = createBrowserRouter([
         path: "revenue",
         element: (
           <PermissionGuard permission="revenue">
-            <RevenueOverviewPage />
+            <LazyLoad><RevenueOverviewPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -176,7 +173,7 @@ export const router = createBrowserRouter([
         path: "analytics/break-even",
         element: (
           <PermissionGuard permission="analytics">
-            <BreakEvenPage />
+            <LazyLoad><BreakEvenPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -184,7 +181,7 @@ export const router = createBrowserRouter([
         path: "analytics/trends",
         element: (
           <PermissionGuard permission="analytics">
-            <DashboardPage />
+            <LazyLoad><DashboardPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -194,7 +191,7 @@ export const router = createBrowserRouter([
         path: "partners",
         element: (
           <PermissionGuard permission="creators">
-            <PartnersListPage />
+            <LazyLoad><PartnersListPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -202,7 +199,7 @@ export const router = createBrowserRouter([
         path: "partners/:id",
         element: (
           <PermissionGuard permission="creators">
-            <PartnerDetailPage />
+            <LazyLoad><PartnerDetailPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -210,7 +207,7 @@ export const router = createBrowserRouter([
         path: "payouts",
         element: (
           <PermissionGuard permission="creators">
-            <PayoutsPage />
+            <LazyLoad><PayoutsPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -218,7 +215,7 @@ export const router = createBrowserRouter([
         path: "contracts",
         element: (
           <PermissionGuard permission="creators">
-            <ContractsPage />
+            <LazyLoad><ContractsPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -226,7 +223,7 @@ export const router = createBrowserRouter([
         path: "deals",
         element: (
           <PermissionGuard permission="creators">
-            <DealsPage />
+            <LazyLoad><DealsPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -236,7 +233,7 @@ export const router = createBrowserRouter([
         path: "ambassadors",
         element: (
           <PermissionGuard permission="creators">
-            <AmbassadorControlPage />
+            <LazyLoad><AmbassadorControlPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -246,7 +243,7 @@ export const router = createBrowserRouter([
         path: "employees",
         element: (
           <PermissionGuard permission="employees" adminOnly>
-            <EmployeesPage />
+            <LazyLoad><EmployeesPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -256,7 +253,7 @@ export const router = createBrowserRouter([
         path: "performance",
         element: (
           <PermissionGuard permission="performance" ownerOnly>
-            <PerformanceDashboard />
+            <LazyLoad><PerformanceDashboard /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -266,7 +263,7 @@ export const router = createBrowserRouter([
         path: "beta",
         element: (
           <PermissionGuard permission="users">
-            <BetaManagementPage />
+            <LazyLoad><BetaManagementPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -276,7 +273,7 @@ export const router = createBrowserRouter([
         path: "crashes",
         element: (
           <PermissionGuard permission="users">
-            <CrashesPage />
+            <LazyLoad><CrashesPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -286,7 +283,7 @@ export const router = createBrowserRouter([
         path: "health",
         element: (
           <PermissionGuard adminOnly>
-            <SupabaseHealthPage />
+            <LazyLoad><SupabaseHealthPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -296,7 +293,7 @@ export const router = createBrowserRouter([
         path: "storage",
         element: (
           <PermissionGuard permission="storage">
-            <TeamStoragePage />
+            <LazyLoad><TeamStoragePage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -306,7 +303,7 @@ export const router = createBrowserRouter([
         path: "tasks",
         element: (
           <PermissionGuard permission="tasks">
-            <TasksPage />
+            <LazyLoad><TasksPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -314,7 +311,7 @@ export const router = createBrowserRouter([
         path: "tasks/projects",
         element: (
           <PermissionGuard permission="tasks">
-            <ProjectsPage />
+            <LazyLoad><ProjectsPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -324,7 +321,7 @@ export const router = createBrowserRouter([
         path: "users",
         element: (
           <PermissionGuard permission="users">
-            <UsersListPage />
+            <LazyLoad><UsersListPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -332,23 +329,23 @@ export const router = createBrowserRouter([
       // Settings
       {
         path: "settings/notifications",
-        element: <DashboardPage />,
+        element: <LazyLoad><DashboardPage /></LazyLoad>,
       },
       {
         path: "settings/permissions",
         element: (
           <PermissionGuard ownerOnly>
-            <AdminPermissionsPage />
+            <LazyLoad><AdminPermissionsPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
 
-      // Organization Settings (new)
+      // Organization Settings
       {
         path: "settings/organization",
         element: (
           <PermissionGuard permission="settings" adminOnly>
-            <OrganizationSettingsPage />
+            <LazyLoad><OrganizationSettingsPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -356,7 +353,7 @@ export const router = createBrowserRouter([
         path: "settings/team",
         element: (
           <PermissionGuard permission="settings" adminOnly>
-            <TeamMembersPage />
+            <LazyLoad><TeamMembersPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -366,7 +363,7 @@ export const router = createBrowserRouter([
         path: "settings/billing",
         element: (
           <PermissionGuard permission="settings" adminOnly>
-            <BillingPage />
+            <LazyLoad><BillingPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -374,7 +371,7 @@ export const router = createBrowserRouter([
         path: "billing/plans",
         element: (
           <PermissionGuard permission="settings" adminOnly>
-            <PlansPage />
+            <LazyLoad><PlansPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -384,7 +381,7 @@ export const router = createBrowserRouter([
         path: "sales/demo",
         element: (
           <PermissionGuard permission="sales">
-            <SalesDemoPage />
+            <LazyLoad><SalesDemoPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -392,7 +389,7 @@ export const router = createBrowserRouter([
         path: "sales/crm",
         element: (
           <PermissionGuard permission="sales">
-            <SalesCRMPage />
+            <LazyLoad><SalesCRMPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -402,7 +399,7 @@ export const router = createBrowserRouter([
         path: "lab",
         element: (
           <PermissionGuard permission="lab">
-            <LabDashboardPage />
+            <LazyLoad><LabDashboardPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -410,7 +407,7 @@ export const router = createBrowserRouter([
         path: "lab/athletes",
         element: (
           <PermissionGuard permission="lab">
-            <AthletesListPage />
+            <LazyLoad><AthletesListPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -418,7 +415,7 @@ export const router = createBrowserRouter([
         path: "lab/athletes/:userId",
         element: (
           <PermissionGuard permission="lab">
-            <AthleteDetailPage />
+            <LazyLoad><AthleteDetailPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -426,23 +423,23 @@ export const router = createBrowserRouter([
       // App Launch
       {
         path: "app-launch",
-        element: <AppLaunchDashboard />,
+        element: <LazyLoad><AppLaunchDashboard /></LazyLoad>,
       },
       {
         path: "app-launch/new",
-        element: <LaunchAssistantPage />,
+        element: <LazyLoad><LaunchAssistantPage /></LazyLoad>,
       },
       {
         path: "app-launch/project/:id",
-        element: <AppProjectPage />,
+        element: <LazyLoad><AppProjectPage /></LazyLoad>,
       },
       {
         path: "app-launch/project/:id/assets",
-        element: <AssetStudioPage />,
+        element: <LazyLoad><AssetStudioPage /></LazyLoad>,
       },
       {
         path: "app-launch/assistant",
-        element: <AIAssistantPage />,
+        element: <LazyLoad><AIAssistantPage /></LazyLoad>,
       },
 
       // Security (Owner/Admin only)
@@ -450,7 +447,7 @@ export const router = createBrowserRouter([
         path: "security/login-audit",
         element: (
           <PermissionGuard ownerOnly>
-            <LoginAuditPage />
+            <LazyLoad><LoginAuditPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -458,7 +455,7 @@ export const router = createBrowserRouter([
         path: "security/activity-log",
         element: (
           <PermissionGuard adminOnly>
-            <ActivityLogPage />
+            <LazyLoad><ActivityLogPage /></LazyLoad>
           </PermissionGuard>
         ),
       },
@@ -471,24 +468,24 @@ export const router = createBrowserRouter([
   // Creator Portal Routes
   {
     path: "/creator/login",
-    element: <CreatorLogin />,
+    element: <LazyLoad><CreatorLogin /></LazyLoad>,
   },
   {
     path: "/creator",
     element: (
       <CreatorProtectedRoute>
-        <CreatorLayout />
+        <LazyLoad><CreatorLayout /></LazyLoad>
       </CreatorProtectedRoute>
     ),
     children: [
-      { index: true, element: <CreatorDashboard /> },
-      { path: "referrals", element: <ReferralsPage /> },
-      { path: "payouts", element: <CreatorPayoutsPage /> },
-      { path: "settings", element: <CreatorSettings /> },
+      { index: true, element: <LazyLoad><CreatorDashboard /></LazyLoad> },
+      { path: "referrals", element: <LazyLoad><ReferralsPage /></LazyLoad> },
+      { path: "payouts", element: <LazyLoad><CreatorPayoutsPage /></LazyLoad> },
+      { path: "settings", element: <LazyLoad><CreatorSettings /></LazyLoad> },
     ],
   },
 
-  // Legacy redirects (old /partner and /influencer routes)
+  // Legacy redirects
   { path: "/partner/login", element: <Navigate to="/creator/login" replace /> },
   { path: "/partner/*", element: <Navigate to="/creator" replace /> },
   { path: "/influencer/login", element: <Navigate to="/creator/login" replace /> },
