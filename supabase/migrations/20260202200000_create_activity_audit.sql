@@ -49,8 +49,8 @@ ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "activity_logs_select" ON public.activity_logs
   FOR SELECT TO authenticated
   USING (
-    auth.belongs_to_organization(organization_id)
-    AND auth.organization_role(organization_id) IN ('owner', 'admin')
+    public.belongs_to_organization(organization_id)
+    AND public.get_organization_role(organization_id) IN ('owner', 'admin')
   );
 
 -- Any authenticated user can insert (logging is allowed)
@@ -58,7 +58,7 @@ CREATE POLICY "activity_logs_select" ON public.activity_logs
 CREATE POLICY "activity_logs_insert" ON public.activity_logs
   FOR INSERT TO authenticated
   WITH CHECK (
-    auth.belongs_to_organization(organization_id)
+    public.belongs_to_organization(organization_id)
   );
 
 -- =============================================================================
@@ -89,7 +89,7 @@ BEGIN
   WHERE id = v_user_id;
 
   -- Get current organization
-  v_org_id := auth.organization_id();
+  v_org_id := public.get_current_organization_id();
 
   -- Insert the activity log
   INSERT INTO public.activity_logs (

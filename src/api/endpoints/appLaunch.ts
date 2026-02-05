@@ -932,6 +932,8 @@ export async function createAssistantSession(): Promise<AssistantSession | null>
       paused_at: null,
       completed_at: null,
       last_interaction_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     } as AssistantSession;
   }
 

@@ -11,7 +11,6 @@ import {
   Store,
   FileText,
   Github,
-  Folder,
   FileQuestion,
   GitBranch,
   Cloud,
@@ -41,7 +40,7 @@ import {
   X,
   AlertCircle,
   Wand2,
-  Save,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

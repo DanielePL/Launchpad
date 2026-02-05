@@ -396,110 +396,110 @@ ALTER TABLE public.compliance_documents ENABLE ROW LEVEL SECURITY;
 -- App Projects
 CREATE POLICY "app_projects_select" ON public.app_projects
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "app_projects_insert" ON public.app_projects
   FOR INSERT TO authenticated
-  WITH CHECK (auth.belongs_to_organization(organization_id));
+  WITH CHECK (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "app_projects_update" ON public.app_projects
   FOR UPDATE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "app_projects_delete" ON public.app_projects
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id)
-         AND auth.organization_role(organization_id) IN ('owner', 'admin'));
+  USING (public.belongs_to_organization(organization_id)
+         AND public.get_organization_role(organization_id) IN ('owner', 'admin'));
 
 -- Checklist Items
 CREATE POLICY "checklist_select" ON public.project_checklist_items
   FOR SELECT TO authenticated
   USING (EXISTS (
     SELECT 1 FROM public.app_projects p
-    WHERE p.id = project_id AND auth.belongs_to_organization(p.organization_id)
+    WHERE p.id = project_id AND public.belongs_to_organization(p.organization_id)
   ));
 
 CREATE POLICY "checklist_all" ON public.project_checklist_items
   FOR ALL TO authenticated
   USING (EXISTS (
     SELECT 1 FROM public.app_projects p
-    WHERE p.id = project_id AND auth.belongs_to_organization(p.organization_id)
+    WHERE p.id = project_id AND public.belongs_to_organization(p.organization_id)
   ));
 
 -- Store Credentials (Admin only)
 CREATE POLICY "credentials_select" ON public.store_credentials
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id)
-         AND auth.organization_role(organization_id) IN ('owner', 'admin'));
+  USING (public.belongs_to_organization(organization_id)
+         AND public.get_organization_role(organization_id) IN ('owner', 'admin'));
 
 CREATE POLICY "credentials_all" ON public.store_credentials
   FOR ALL TO authenticated
-  USING (auth.belongs_to_organization(organization_id)
-         AND auth.organization_role(organization_id) IN ('owner', 'admin'));
+  USING (public.belongs_to_organization(organization_id)
+         AND public.get_organization_role(organization_id) IN ('owner', 'admin'));
 
 -- AI Conversations
 CREATE POLICY "conversations_select" ON public.ai_conversations
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "conversations_insert" ON public.ai_conversations
   FOR INSERT TO authenticated
-  WITH CHECK (auth.belongs_to_organization(organization_id) AND user_id = auth.uid());
+  WITH CHECK (public.belongs_to_organization(organization_id) AND user_id = auth.uid());
 
 CREATE POLICY "conversations_update" ON public.ai_conversations
   FOR UPDATE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- AI Messages
 CREATE POLICY "messages_select" ON public.ai_messages
   FOR SELECT TO authenticated
   USING (EXISTS (
     SELECT 1 FROM public.ai_conversations c
-    WHERE c.id = conversation_id AND auth.belongs_to_organization(c.organization_id)
+    WHERE c.id = conversation_id AND public.belongs_to_organization(c.organization_id)
   ));
 
 CREATE POLICY "messages_insert" ON public.ai_messages
   FOR INSERT TO authenticated
   WITH CHECK (EXISTS (
     SELECT 1 FROM public.ai_conversations c
-    WHERE c.id = conversation_id AND auth.belongs_to_organization(c.organization_id)
+    WHERE c.id = conversation_id AND public.belongs_to_organization(c.organization_id)
   ));
 
 -- Project Assets
 CREATE POLICY "assets_select" ON public.project_assets
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "assets_all" ON public.project_assets
   FOR ALL TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- Beta Testers
 CREATE POLICY "beta_testers_select" ON public.app_beta_testers
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "beta_testers_all" ON public.app_beta_testers
   FOR ALL TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- Releases
 CREATE POLICY "releases_select" ON public.app_releases
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "releases_all" ON public.app_releases
   FOR ALL TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- Compliance Documents
 CREATE POLICY "compliance_select" ON public.compliance_documents
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "compliance_all" ON public.compliance_documents
   FOR ALL TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- =============================================================================
 -- 11. HELPER FUNCTIONS

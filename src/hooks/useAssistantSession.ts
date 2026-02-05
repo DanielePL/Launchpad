@@ -17,6 +17,8 @@ export function useActiveSession() {
   return useQuery({
     queryKey: assistantKeys.active(),
     queryFn: api.getActiveSession,
+    retry: false,
+    staleTime: 1000 * 60, // 1 minute
   });
 }
 
@@ -27,6 +29,8 @@ export function usePausedSessions() {
   return useQuery({
     queryKey: assistantKeys.paused(),
     queryFn: api.getPausedSessions,
+    retry: false,
+    staleTime: 1000 * 60, // 1 minute
   });
 }
 

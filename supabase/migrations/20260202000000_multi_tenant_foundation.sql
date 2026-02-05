@@ -3,6 +3,9 @@
 -- Phase 1 & 2: Core tables for multi-tenancy
 -- =============================================================================
 
+-- Enable pgcrypto extension for gen_random_bytes
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- =============================================================================
 -- 1. ORGANIZATIONS (Tenants)
 -- =============================================================================
@@ -85,7 +88,7 @@ CREATE TABLE IF NOT EXISTS public.organization_invitations (
   email text NOT NULL,
   role text NOT NULL DEFAULT 'member'
     CHECK (role IN ('admin', 'member', 'viewer')),  -- Can't invite as owner
-  token text UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+  token text UNIQUE NOT NULL DEFAULT replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''),
   invited_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   expires_at timestamptz NOT NULL DEFAULT (now() + interval '7 days'),
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -150,7 +153,7 @@ CREATE INDEX IF NOT EXISTS idx_task_comments_org_id ON public.task_comments(orga
 -- =============================================================================
 
 -- Get current user's active organization from JWT claims
-CREATE OR REPLACE FUNCTION auth.organization_id()
+CREATE OR REPLACE FUNCTION public.get_current_organization_id()
 RETURNS uuid
 LANGUAGE sql
 STABLE
@@ -162,7 +165,7 @@ AS $$
 $$;
 
 -- Check if user belongs to an organization
-CREATE OR REPLACE FUNCTION auth.belongs_to_organization(org_id uuid)
+CREATE OR REPLACE FUNCTION public.belongs_to_organization(org_id uuid)
 RETURNS boolean
 LANGUAGE sql
 STABLE
@@ -175,7 +178,7 @@ AS $$
 $$;
 
 -- Get user's role in an organization
-CREATE OR REPLACE FUNCTION auth.organization_role(org_id uuid)
+CREATE OR REPLACE FUNCTION public.get_organization_role(org_id uuid)
 RETURNS text
 LANGUAGE sql
 STABLE
@@ -186,7 +189,7 @@ AS $$
 $$;
 
 -- Check if user is owner of organization
-CREATE OR REPLACE FUNCTION auth.is_organization_owner(org_id uuid)
+CREATE OR REPLACE FUNCTION public.is_organization_owner(org_id uuid)
 RETURNS boolean
 LANGUAGE sql
 STABLE
@@ -199,7 +202,7 @@ AS $$
 $$;
 
 -- Check if user is admin or owner of organization
-CREATE OR REPLACE FUNCTION auth.is_organization_admin(org_id uuid)
+CREATE OR REPLACE FUNCTION public.is_organization_admin(org_id uuid)
 RETURNS boolean
 LANGUAGE sql
 STABLE
@@ -275,12 +278,12 @@ ALTER TABLE public.organization_invitations ENABLE ROW LEVEL SECURITY;
 -- Organizations: Users can only see orgs they belong to
 CREATE POLICY "org_select_member" ON public.organizations
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(id));
+  USING (public.belongs_to_organization(id));
 
 CREATE POLICY "org_update_admin" ON public.organizations
   FOR UPDATE TO authenticated
-  USING (auth.is_organization_admin(id))
-  WITH CHECK (auth.is_organization_admin(id));
+  USING (public.is_organization_admin(id))
+  WITH CHECK (public.is_organization_admin(id));
 
 -- User Profiles: Users can see profiles of people in their org
 CREATE POLICY "profile_select_own" ON public.user_profiles
@@ -302,36 +305,36 @@ CREATE POLICY "profile_update_own" ON public.user_profiles
 -- Organization Members: Viewable by members, manageable by admins
 CREATE POLICY "members_select" ON public.organization_members
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "members_insert_admin" ON public.organization_members
   FOR INSERT TO authenticated
-  WITH CHECK (auth.is_organization_admin(organization_id));
+  WITH CHECK (public.is_organization_admin(organization_id));
 
 CREATE POLICY "members_update_admin" ON public.organization_members
   FOR UPDATE TO authenticated
-  USING (auth.is_organization_admin(organization_id))
-  WITH CHECK (auth.is_organization_admin(organization_id));
+  USING (public.is_organization_admin(organization_id))
+  WITH CHECK (public.is_organization_admin(organization_id));
 
 CREATE POLICY "members_delete_admin" ON public.organization_members
   FOR DELETE TO authenticated
-  USING (auth.is_organization_admin(organization_id));
+  USING (public.is_organization_admin(organization_id));
 
 -- Organization Invitations: Viewable/manageable by admins, or by the invited user
 CREATE POLICY "invitations_select" ON public.organization_invitations
   FOR SELECT TO authenticated
   USING (
-    auth.is_organization_admin(organization_id) OR
+    public.is_organization_admin(organization_id) OR
     email = (SELECT email FROM auth.users WHERE id = auth.uid())
   );
 
 CREATE POLICY "invitations_insert_admin" ON public.organization_invitations
   FOR INSERT TO authenticated
-  WITH CHECK (auth.is_organization_admin(organization_id));
+  WITH CHECK (public.is_organization_admin(organization_id));
 
 CREATE POLICY "invitations_delete_admin" ON public.organization_invitations
   FOR DELETE TO authenticated
-  USING (auth.is_organization_admin(organization_id));
+  USING (public.is_organization_admin(organization_id));
 
 -- =============================================================================
 -- 10. DEFAULT ORGANIZATION FOR MIGRATION

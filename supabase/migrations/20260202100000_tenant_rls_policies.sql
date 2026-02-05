@@ -70,23 +70,23 @@ DROP POLICY IF EXISTS "team_files_delete" ON public.team_files;
 
 CREATE POLICY "tasks_tenant_select" ON public.tasks
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "tasks_tenant_insert" ON public.tasks
   FOR INSERT TO authenticated
   WITH CHECK (
-    organization_id = auth.organization_id() AND
-    auth.belongs_to_organization(organization_id)
+    organization_id = public.get_current_organization_id() AND
+    public.belongs_to_organization(organization_id)
   );
 
 CREATE POLICY "tasks_tenant_update" ON public.tasks
   FOR UPDATE TO authenticated
-  USING (auth.belongs_to_organization(organization_id))
-  WITH CHECK (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id))
+  WITH CHECK (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "tasks_tenant_delete" ON public.tasks
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- -----------------------------------------------------------------------------
 -- TASK PROJECTS
@@ -94,23 +94,23 @@ CREATE POLICY "tasks_tenant_delete" ON public.tasks
 
 CREATE POLICY "task_projects_tenant_select" ON public.task_projects
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "task_projects_tenant_insert" ON public.task_projects
   FOR INSERT TO authenticated
   WITH CHECK (
-    organization_id = auth.organization_id() AND
-    auth.belongs_to_organization(organization_id)
+    organization_id = public.get_current_organization_id() AND
+    public.belongs_to_organization(organization_id)
   );
 
 CREATE POLICY "task_projects_tenant_update" ON public.task_projects
   FOR UPDATE TO authenticated
-  USING (auth.belongs_to_organization(organization_id))
-  WITH CHECK (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id))
+  WITH CHECK (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "task_projects_tenant_delete" ON public.task_projects
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- -----------------------------------------------------------------------------
 -- TASK SUBTASKS
@@ -118,23 +118,23 @@ CREATE POLICY "task_projects_tenant_delete" ON public.task_projects
 
 CREATE POLICY "task_subtasks_tenant_select" ON public.task_subtasks
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "task_subtasks_tenant_insert" ON public.task_subtasks
   FOR INSERT TO authenticated
   WITH CHECK (
-    organization_id = auth.organization_id() AND
-    auth.belongs_to_organization(organization_id)
+    organization_id = public.get_current_organization_id() AND
+    public.belongs_to_organization(organization_id)
   );
 
 CREATE POLICY "task_subtasks_tenant_update" ON public.task_subtasks
   FOR UPDATE TO authenticated
-  USING (auth.belongs_to_organization(organization_id))
-  WITH CHECK (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id))
+  WITH CHECK (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "task_subtasks_tenant_delete" ON public.task_subtasks
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- -----------------------------------------------------------------------------
 -- TASK ATTACHMENTS
@@ -142,18 +142,18 @@ CREATE POLICY "task_subtasks_tenant_delete" ON public.task_subtasks
 
 CREATE POLICY "task_attachments_tenant_select" ON public.task_attachments
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "task_attachments_tenant_insert" ON public.task_attachments
   FOR INSERT TO authenticated
   WITH CHECK (
-    organization_id = auth.organization_id() AND
-    auth.belongs_to_organization(organization_id)
+    organization_id = public.get_current_organization_id() AND
+    public.belongs_to_organization(organization_id)
   );
 
 CREATE POLICY "task_attachments_tenant_delete" ON public.task_attachments
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- -----------------------------------------------------------------------------
 -- TASK COMMENTS
@@ -161,18 +161,18 @@ CREATE POLICY "task_attachments_tenant_delete" ON public.task_attachments
 
 CREATE POLICY "task_comments_tenant_select" ON public.task_comments
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "task_comments_tenant_insert" ON public.task_comments
   FOR INSERT TO authenticated
   WITH CHECK (
-    organization_id = auth.organization_id() AND
-    auth.belongs_to_organization(organization_id)
+    organization_id = public.get_current_organization_id() AND
+    public.belongs_to_organization(organization_id)
   );
 
 CREATE POLICY "task_comments_tenant_delete" ON public.task_comments
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- -----------------------------------------------------------------------------
 -- SALES LEADS
@@ -180,23 +180,23 @@ CREATE POLICY "task_comments_tenant_delete" ON public.task_comments
 
 CREATE POLICY "sales_leads_tenant_select" ON public.sales_leads
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "sales_leads_tenant_insert" ON public.sales_leads
   FOR INSERT TO authenticated
   WITH CHECK (
-    organization_id = auth.organization_id() AND
-    auth.belongs_to_organization(organization_id)
+    organization_id = public.get_current_organization_id() AND
+    public.belongs_to_organization(organization_id)
   );
 
 CREATE POLICY "sales_leads_tenant_update" ON public.sales_leads
   FOR UPDATE TO authenticated
-  USING (auth.belongs_to_organization(organization_id))
-  WITH CHECK (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id))
+  WITH CHECK (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "sales_leads_tenant_delete" ON public.sales_leads
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- -----------------------------------------------------------------------------
 -- SALES NOTES
@@ -204,18 +204,18 @@ CREATE POLICY "sales_leads_tenant_delete" ON public.sales_leads
 
 CREATE POLICY "sales_notes_tenant_select" ON public.sales_notes
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "sales_notes_tenant_insert" ON public.sales_notes
   FOR INSERT TO authenticated
   WITH CHECK (
-    organization_id = auth.organization_id() AND
-    auth.belongs_to_organization(organization_id)
+    organization_id = public.get_current_organization_id() AND
+    public.belongs_to_organization(organization_id)
   );
 
 CREATE POLICY "sales_notes_tenant_delete" ON public.sales_notes
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- -----------------------------------------------------------------------------
 -- CREATOR CONTRACTS
@@ -223,23 +223,23 @@ CREATE POLICY "sales_notes_tenant_delete" ON public.sales_notes
 
 CREATE POLICY "creator_contracts_tenant_select" ON public.creator_contracts
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "creator_contracts_tenant_insert" ON public.creator_contracts
   FOR INSERT TO authenticated
   WITH CHECK (
-    organization_id = auth.organization_id() AND
-    auth.belongs_to_organization(organization_id)
+    organization_id = public.get_current_organization_id() AND
+    public.belongs_to_organization(organization_id)
   );
 
 CREATE POLICY "creator_contracts_tenant_update" ON public.creator_contracts
   FOR UPDATE TO authenticated
-  USING (auth.belongs_to_organization(organization_id))
-  WITH CHECK (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id))
+  WITH CHECK (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "creator_contracts_tenant_delete" ON public.creator_contracts
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- -----------------------------------------------------------------------------
 -- TEAM FILES
@@ -247,23 +247,23 @@ CREATE POLICY "creator_contracts_tenant_delete" ON public.creator_contracts
 
 CREATE POLICY "team_files_tenant_select" ON public.team_files
   FOR SELECT TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "team_files_tenant_insert" ON public.team_files
   FOR INSERT TO authenticated
   WITH CHECK (
-    organization_id = auth.organization_id() AND
-    auth.belongs_to_organization(organization_id)
+    organization_id = public.get_current_organization_id() AND
+    public.belongs_to_organization(organization_id)
   );
 
 CREATE POLICY "team_files_tenant_update" ON public.team_files
   FOR UPDATE TO authenticated
-  USING (auth.belongs_to_organization(organization_id))
-  WITH CHECK (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id))
+  WITH CHECK (public.belongs_to_organization(organization_id));
 
 CREATE POLICY "team_files_tenant_delete" ON public.team_files
   FOR DELETE TO authenticated
-  USING (auth.belongs_to_organization(organization_id));
+  USING (public.belongs_to_organization(organization_id));
 
 -- =============================================================================
 -- 3. STORAGE BUCKET POLICIES (Tenant-Scoped)
@@ -286,56 +286,56 @@ CREATE POLICY "storage_contracts_select" ON storage.objects
   FOR SELECT TO authenticated
   USING (
     bucket_id = 'contracts' AND
-    auth.belongs_to_organization((storage.foldername(name))[1]::uuid)
+    public.belongs_to_organization((storage.foldername(name))[1]::uuid)
   );
 
 CREATE POLICY "storage_contracts_insert" ON storage.objects
   FOR INSERT TO authenticated
   WITH CHECK (
     bucket_id = 'contracts' AND
-    (storage.foldername(name))[1]::uuid = auth.organization_id()
+    (storage.foldername(name))[1]::uuid = public.get_current_organization_id()
   );
 
 CREATE POLICY "storage_contracts_update" ON storage.objects
   FOR UPDATE TO authenticated
   USING (
     bucket_id = 'contracts' AND
-    auth.belongs_to_organization((storage.foldername(name))[1]::uuid)
+    public.belongs_to_organization((storage.foldername(name))[1]::uuid)
   );
 
 CREATE POLICY "storage_contracts_delete" ON storage.objects
   FOR DELETE TO authenticated
   USING (
     bucket_id = 'contracts' AND
-    auth.is_organization_admin((storage.foldername(name))[1]::uuid)
+    public.is_organization_admin((storage.foldername(name))[1]::uuid)
   );
 
 CREATE POLICY "storage_team_select" ON storage.objects
   FOR SELECT TO authenticated
   USING (
     bucket_id = 'team-storage' AND
-    auth.belongs_to_organization((storage.foldername(name))[1]::uuid)
+    public.belongs_to_organization((storage.foldername(name))[1]::uuid)
   );
 
 CREATE POLICY "storage_team_insert" ON storage.objects
   FOR INSERT TO authenticated
   WITH CHECK (
     bucket_id = 'team-storage' AND
-    (storage.foldername(name))[1]::uuid = auth.organization_id()
+    (storage.foldername(name))[1]::uuid = public.get_current_organization_id()
   );
 
 CREATE POLICY "storage_team_update" ON storage.objects
   FOR UPDATE TO authenticated
   USING (
     bucket_id = 'team-storage' AND
-    auth.belongs_to_organization((storage.foldername(name))[1]::uuid)
+    public.belongs_to_organization((storage.foldername(name))[1]::uuid)
   );
 
 CREATE POLICY "storage_team_delete" ON storage.objects
   FOR DELETE TO authenticated
   USING (
     bucket_id = 'team-storage' AND
-    auth.is_organization_admin((storage.foldername(name))[1]::uuid)
+    public.is_organization_admin((storage.foldername(name))[1]::uuid)
   );
 
 -- =============================================================================

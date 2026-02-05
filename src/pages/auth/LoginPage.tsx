@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLogLoginAttempt } from "@/hooks/useLoginAudit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Rocket, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { AlertCircle, Rocket, Eye, EyeOff, Mail, Lock, ArrowRight, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
 import gradientBg from "@/assets/gradient-bg.jpg";
 import gradientBgDark from "@/assets/gradient-bg-dark.png";
@@ -24,6 +24,27 @@ export function LoginPage() {
 
   // Get redirect path from state or default to dashboard
   const from = location.state?.from?.pathname || "/";
+
+  // Dev login credentials
+  const DEV_EMAIL = "danielepauli@gmail.com";
+  const DEV_PASSWORD = "Ichiban_11";
+
+  const handleDevLogin = async () => {
+    setError("");
+    setIsLoading(true);
+    try {
+      const { error } = await signIn(DEV_EMAIL, DEV_PASSWORD);
+      if (error) {
+        setError(error.message);
+      } else {
+        navigate(from, { replace: true });
+      }
+    } catch {
+      setError("Dev login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Determine login status based on error message
   const getLoginStatus = (errorMessage?: string): LoginAuditStatus => {
@@ -167,6 +188,19 @@ export function LoginPage() {
               </>
             )}
           </Button>
+
+          {import.meta.env.DEV && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 text-base font-semibold rounded-xl border-dashed border-2 border-yellow-500/50 text-yellow-600 hover:bg-yellow-500/10"
+              onClick={handleDevLogin}
+              disabled={isLoading}
+            >
+              <Zap className="mr-2 h-5 w-5" />
+              Dev Login
+            </Button>
+          )}
         </form>
 
         {/* Sign Up Link */}

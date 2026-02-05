@@ -190,14 +190,8 @@ export async function analyzeGitHubRepo(repoUrl: string): Promise<{
   const langResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`);
   const languages = langResponse.ok ? await langResponse.json() : {};
 
-  // Try to fetch common config files
-  const configFiles = [
-    "package.json",
-    "pubspec.yaml",
-    "app.json",
-    "android/app/build.gradle",
-    "ios/Runner.xcodeproj/project.pbxproj",
-  ];
+  // TODO: Future enhancement - fetch and analyze config files for more accurate detection
+  // const configFiles = ["package.json", "pubspec.yaml", "app.json", ...];
 
   let techStack = "Unknown";
   const platforms: string[] = [];
