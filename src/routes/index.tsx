@@ -10,6 +10,7 @@ import { CreatorLayout } from "@/components/creator-portal/CreatorLayout";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { SignUpPage } from "@/pages/auth/SignUpPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 
 // Onboarding Pages
 import { CreateOrganizationPage } from "@/pages/onboarding/CreateOrganizationPage";
@@ -90,6 +91,10 @@ export const router = createBrowserRouter([
   {
     path: "/forgot-password",
     element: <ForgotPasswordPage />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
   },
 
   // Legal Routes (public - no login required)
