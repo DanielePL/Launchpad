@@ -95,35 +95,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return;
 
     try {
-      // Fetch user profile
-      const { data: profile, error: profileError } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
+      // Fetch profile and memberships IN PARALLEL for speed
+      const [profileResult, membershipsResult] = await Promise.all([
+        supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("id", userId)
+          .maybeSingle(),
+        supabase
+          .from("organization_members")
+          .select(`
+            *,
+            organization:organizations(*)
+          `)
+          .eq("user_id", userId),
+      ]);
 
-      if (profileError) {
-        // Profile might not exist yet for new users, that's ok
-        console.log("Profile not found, user may need to complete onboarding");
-      }
+      const { data: profile } = profileResult;
+      const { data: memberships } = membershipsResult;
 
       if (profile) {
         setUserProfile(profile);
-      }
-
-      // Fetch all organization memberships
-      const { data: memberships, error: membershipsError } = await supabase
-        .from("organization_members")
-        .select(`
-          *,
-          organization:organizations(*)
-        `)
-        .eq("user_id", userId);
-
-      if (membershipsError) {
-        // User might not be in any org yet, that's ok
-        console.log("No memberships found, user may need to create organization");
-        return;
       }
 
       if (memberships && memberships.length > 0) {
@@ -150,12 +142,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setMembership(currentMembership);
           setOrganization(currentMembership.organization as Organization);
 
-          // Update profile if current_organization_id was not set
-          if (!profile?.current_organization_id && supabase) {
-            await supabase
+          // Update profile if current_organization_id was not set (fire and forget)
+          if (!profile?.current_organization_id) {
+            supabase
               .from("user_profiles")
               .update({ current_organization_id: currentOrgId })
-              .eq("id", userId);
+              .eq("id", userId)
+              .then(() => {});
           }
         }
       }
@@ -197,8 +190,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
 
+        // Set loading false IMMEDIATELY after session check
+        // User data will load in background
+        setIsLoading(false);
+
         if (session?.user) {
-          await fetchUserData(session.user.id);
+          // Don't await - let it load in background
+          fetchUserData(session.user.id);
         }
       } catch (error: unknown) {
         // Ignore AbortError - happens in React StrictMode due to double-mounting
@@ -206,7 +204,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
         console.error("Failed to initialize session:", error);
-      } finally {
         if (isMounted) {
           setIsLoading(false);
         }
