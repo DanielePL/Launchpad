@@ -75,68 +75,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Provider Component
 // =============================================================================
 
-// =============================================================================
-// DEV MODE: Skip Authentication
-// =============================================================================
-const DEV_SKIP_AUTH = true;
-
-const MOCK_USER_ID = "00000000-0000-0000-0000-000000000001";
-const MOCK_ORG_ID = "00000000-0000-0000-0000-000000000002";
-
-const MOCK_USER: User = {
-  id: MOCK_USER_ID,
-  email: "dev@launchpad.local",
-  app_metadata: {},
-  user_metadata: { full_name: "Dev User" },
-  aud: "authenticated",
-  created_at: new Date().toISOString(),
-} as User;
-
-const MOCK_SESSION: Session = {
-  access_token: "mock-token",
-  refresh_token: "mock-refresh",
-  expires_in: 3600,
-  token_type: "bearer",
-  user: MOCK_USER,
-} as Session;
-
-const MOCK_ORGANIZATION: Organization = {
-  id: MOCK_ORG_ID,
-  name: "Dev Organization",
-  slug: "dev-org",
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-
-const MOCK_MEMBERSHIP: OrganizationMember = {
-  id: "00000000-0000-0000-0000-000000000003",
-  organization_id: MOCK_ORG_ID,
-  user_id: MOCK_USER_ID,
-  role: "owner",
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-
-const MOCK_PROFILE: UserProfile = {
-  id: MOCK_USER_ID,
-  full_name: "Dev User",
-  email: "dev@launchpad.local",
-  current_organization_id: MOCK_ORG_ID,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   // Auth State
-  const [user, setUser] = useState<User | null>(DEV_SKIP_AUTH ? MOCK_USER : null);
-  const [session, setSession] = useState<Session | null>(DEV_SKIP_AUTH ? MOCK_SESSION : null);
-  const [isLoading, setIsLoading] = useState(!DEV_SKIP_AUTH);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Organization State
-  const [organization, setOrganization] = useState<Organization | null>(DEV_SKIP_AUTH ? MOCK_ORGANIZATION : null);
-  const [membership, setMembership] = useState<OrganizationMember | null>(DEV_SKIP_AUTH ? MOCK_MEMBERSHIP : null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(DEV_SKIP_AUTH ? MOCK_PROFILE : null);
-  const [organizations, setOrganizations] = useState<Organization[]>(DEV_SKIP_AUTH ? [MOCK_ORGANIZATION] : []);
+  const [organization, setOrganization] = useState<Organization | null>(null);
+  const [membership, setMembership] = useState<OrganizationMember | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
 
   // ---------------------------------------------------------------------------
   // Fetch User Data (Profile, Memberships, Organizations)
@@ -224,12 +173,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
-    // Skip real auth in dev mode
-    if (DEV_SKIP_AUTH) {
-      console.log("🔓 DEV MODE: Authentication bypassed");
-      return;
-    }
-
     if (!supabase) {
       console.log("Supabase not configured");
       setIsLoading(false);
