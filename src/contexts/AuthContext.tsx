@@ -388,12 +388,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
+        console.log("[CreateOrg] Starting for user:", user.id);
+
         // Create organization
         const { data: org, error: orgError } = await supabase
           .from("organizations")
           .insert({ name, slug })
           .select()
           .single();
+
+        console.log("[CreateOrg] Org insert result:", { org, orgError });
 
         if (orgError) {
           return { organization: null, error: new Error(orgError.message) };
@@ -408,17 +412,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             role: "owner",
           });
 
+        console.log("[CreateOrg] Member insert result:", { memberError });
+
         if (memberError) {
           // Rollback org creation
           await supabase.from("organizations").delete().eq("id", org.id);
           return { organization: null, error: new Error(memberError.message) };
         }
 
-        // Update user's current org
-        await supabase
+        // Update or create user's profile with current org
+        const { error: profileError } = await supabase
           .from("user_profiles")
-          .update({ current_organization_id: org.id })
-          .eq("id", user.id);
+          .upsert({
+            id: user.id,
+            current_organization_id: org.id,
+            full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
+          });
+
+        console.log("[CreateOrg] Profile upsert result:", { profileError });
 
         // Refetch user data
         await fetchUserData(user.id);
