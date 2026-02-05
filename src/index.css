@@ -163,15 +163,17 @@ All colors MUST be HSL. Matching prometheus_coach exactly.
 @layer utilities {
   /* Glassmorphism - matching coach app */
   .glass {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: var(--shadow-glass);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   }
 
   .dark .glass {
     background: rgba(50, 50, 50, 0.4);
+    backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-glass);
   }
 
   .glass-hover {

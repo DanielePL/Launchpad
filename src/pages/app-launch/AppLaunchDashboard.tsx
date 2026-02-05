@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAppProjects, useAppLaunchStats } from "@/hooks/useAppLaunch";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NewProjectDialog } from "@/components/app-launch/NewProjectDialog";
+import { WelcomeAssistantModal } from "@/components/app-launch/assistant";
 import type { ProjectStatus } from "@/api/types/appLaunch";
 
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; icon: React.ReactNode }> = {
@@ -33,6 +34,25 @@ export function AppLaunchDashboard() {
   const { data: projects, isLoading } = useAppProjects();
   const { data: stats } = useAppLaunchStats();
   const [showNewProject, setShowNewProject] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  // Show welcome modal unless user has permanently dismissed it
+  useEffect(() => {
+    if (isLoading) return;
+
+    const permanentlyDismissed = localStorage.getItem("launchpad_assistant_dismissed") === "true";
+
+    if (!permanentlyDismissed) {
+      setShowWelcomeModal(true);
+    }
+  }, [isLoading]);
+
+  const handleWelcomeModalClose = (dontShowAgain: boolean) => {
+    setShowWelcomeModal(false);
+    if (dontShowAgain) {
+      localStorage.setItem("launchpad_assistant_dismissed", "true");
+    }
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -48,12 +68,10 @@ export function AppLaunchDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link to="/app-launch/assistant">
-            <Button variant="outline" className="gap-2">
-              <Bot className="h-4 w-4" />
-              AI Assistant
-            </Button>
-          </Link>
+          <Button variant="outline" className="gap-2" onClick={() => setShowWelcomeModal(true)}>
+            <Bot className="h-4 w-4" />
+            AI Wizard
+          </Button>
           <Button onClick={() => setShowNewProject(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             New Project
@@ -103,16 +121,14 @@ export function AppLaunchDashboard() {
             <div>
               <h3 className="font-semibold">Launch AI Assistant</h3>
               <p className="text-sm text-muted-foreground">
-                Get expert help with app publishing, store optimization, and review guidelines
+                Starte den geführten Launch-Prozess mit AI-Unterstützung
               </p>
             </div>
           </div>
-          <Link to="/app-launch/assistant">
-            <Button className="gap-2">
-              Start Chat
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          <Button className="gap-2" onClick={() => setShowWelcomeModal(true)}>
+            <Bot className="h-4 w-4" />
+            Wizard starten
+          </Button>
         </div>
       </div>
 
@@ -126,15 +142,21 @@ export function AppLaunchDashboard() {
           </div>
         ) : !projects?.length ? (
           <div className="glass rounded-xl p-12 text-center">
-            <Rocket className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="font-semibold mb-2">No projects yet</h3>
+            <Bot className="h-12 w-12 mx-auto mb-4 text-primary opacity-80" />
+            <h3 className="font-semibold mb-2">Noch keine Projekte</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Create your first app project to start the launch journey
+              Starte den AI-Assistenten und lass dich Schritt für Schritt zum App-Launch führen
             </p>
-            <Button onClick={() => setShowNewProject(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create Project
-            </Button>
+            <div className="flex gap-3 justify-center">
+              <Button onClick={() => setShowWelcomeModal(true)} className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                Mit AI-Assistent starten
+              </Button>
+              <Button variant="outline" onClick={() => setShowNewProject(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Manuell erstellen
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -224,6 +246,12 @@ export function AppLaunchDashboard() {
       <NewProjectDialog
         open={showNewProject}
         onOpenChange={setShowNewProject}
+      />
+
+      {/* Welcome Assistant Modal */}
+      <WelcomeAssistantModal
+        open={showWelcomeModal}
+        onClose={handleWelcomeModalClose}
       />
     </div>
   );

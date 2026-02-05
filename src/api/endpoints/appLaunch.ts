@@ -1,4 +1,13 @@
 import { supabase } from "@/api/supabaseClient";
+
+// =============================================================================
+// DEV MODE - Skip database calls for assistant sessions
+// =============================================================================
+const DEV_SKIP_AUTH = true;
+
+const MOCK_SESSION_ID = "00000000-0000-0000-0000-000000000099";
+const MOCK_CONV_ID = "00000000-0000-0000-0000-000000000098";
+
 import type {
   AppProject,
   CreateAppProjectInput,
@@ -30,6 +39,12 @@ import { SCREENSHOT_REQUIREMENTS } from "@/api/types/appLaunch";
  * Get all app projects for the organization
  */
 export async function getAppProjects(): Promise<AppProject[]> {
+  // DEV MODE: Return projects from localStorage
+  if (DEV_SKIP_AUTH) {
+    const localProjects = JSON.parse(localStorage.getItem("launchpad_projects") || "[]");
+    return localProjects as AppProject[];
+  }
+
   if (!supabase) return [];
 
   const { data, error } = await supabase
@@ -206,6 +221,9 @@ export async function toggleChecklistItem(
  * Get all conversations for the current user
  */
 export async function getConversations(projectId?: string): Promise<AIConversation[]> {
+  // DEV MODE: Return empty array
+  if (DEV_SKIP_AUTH) return [];
+
   if (!supabase) return [];
 
   let query = supabase
@@ -234,6 +252,9 @@ export async function getConversation(conversationId: string): Promise<{
   conversation: AIConversation;
   messages: AIMessage[];
 } | null> {
+  // DEV MODE: Return null
+  if (DEV_SKIP_AUTH) return null;
+
   if (!supabase) return null;
 
   const [conversationResult, messagesResult] = await Promise.all([
@@ -266,6 +287,20 @@ export async function getConversation(conversationId: string): Promise<{
 export async function createConversation(
   input: CreateConversationInput
 ): Promise<AIConversation | null> {
+  // DEV MODE: Return mock conversation
+  if (DEV_SKIP_AUTH) {
+    console.log("🔓 DEV MODE: Creating mock conversation");
+    return {
+      id: MOCK_CONV_ID,
+      user_id: "00000000-0000-0000-0000-000000000001",
+      project_id: input.project_id || null,
+      title: input.title || "DEV Conversation",
+      context_type: input.context_type || "general",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as AIConversation;
+  }
+
   if (!supabase) return null;
 
   const { data: userData } = await supabase.auth.getUser();
@@ -450,6 +485,22 @@ export async function createRelease(
  * Get app launch dashboard stats
  */
 export async function getAppLaunchStats(): Promise<AppLaunchStats> {
+  // DEV MODE: Return stats from localStorage projects
+  if (DEV_SKIP_AUTH) {
+    const localProjects = JSON.parse(localStorage.getItem("launchpad_projects") || "[]");
+    const statusCounts: Record<string, number> = {};
+    localProjects.forEach((p: { status: string }) => {
+      statusCounts[p.status] = (statusCounts[p.status] || 0) + 1;
+    });
+    return {
+      total_projects: localProjects.length,
+      projects_by_status: statusCounts,
+      active_beta_testers: 0,
+      pending_reviews: 0,
+      live_apps: statusCounts.live || 0,
+    };
+  }
+
   if (!supabase) {
     return {
       total_projects: 0,
@@ -826,6 +877,16 @@ export async function sendAIMessage(
   message: string;
   usage?: { input_tokens: number; output_tokens: number };
 } | null> {
+  // DEV MODE: Return mock response (Edge Function requires auth)
+  if (DEV_SKIP_AUTH) {
+    console.log("🔓 DEV MODE: Mock AI message (Edge Function skipped):", message);
+    return {
+      conversation_id: conversationId || MOCK_CONV_ID,
+      message: `[DEV MODE] Ich bin der Launch Assistant! Du hast geschrieben: "${message}"\n\nDie echte AI ist im DEV-Modus deaktiviert. Nutze den Welcome Assistant (WelcomeAssistantModal) für echte AI-Generierung.`,
+      usage: { input_tokens: 0, output_tokens: 0 },
+    };
+  }
+
   if (!supabase) return null;
 
   const { data, error } = await supabase.functions.invoke("launch-ai-chat", {
@@ -852,6 +913,28 @@ export async function sendAIMessage(
  * Create a new assistant session
  */
 export async function createAssistantSession(): Promise<AssistantSession | null> {
+  // DEV MODE: Return mock session
+  if (DEV_SKIP_AUTH) {
+    console.log("🔓 DEV MODE: Creating mock assistant session");
+    return {
+      id: MOCK_SESSION_ID,
+      project_id: null,
+      user_id: "00000000-0000-0000-0000-000000000001",
+      organization_id: "00000000-0000-0000-0000-000000000002",
+      current_phase: "discovery",
+      current_step: 0,
+      collected_data: {},
+      generated_content: {},
+      status: "active",
+      phases_completed: [],
+      conversation_id: MOCK_CONV_ID,
+      started_at: new Date().toISOString(),
+      paused_at: null,
+      completed_at: null,
+      last_interaction_at: new Date().toISOString(),
+    } as AssistantSession;
+  }
+
   if (!supabase) return null;
 
   const { data: userData } = await supabase.auth.getUser();
@@ -898,40 +981,70 @@ export async function createAssistantSession(): Promise<AssistantSession | null>
  * Get the active assistant session for the current user
  */
 export async function getActiveSession(): Promise<AssistantSession | null> {
+  // DEV MODE: Return null (no active session)
+  if (DEV_SKIP_AUTH) {
+    return null;
+  }
+
   if (!supabase) return null;
 
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) return null;
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return null;
 
-  const { data } = await supabase
-    .from("assistant_sessions")
-    .select("*")
-    .eq("user_id", userData.user.id)
-    .eq("status", "active")
-    .order("last_interaction_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    const { data, error } = await supabase
+      .from("assistant_sessions")
+      .select("*")
+      .eq("user_id", userData.user.id)
+      .eq("status", "active")
+      .order("last_interaction_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  return data;
+    if (error) {
+      console.warn("assistant_sessions table may not exist:", error.message);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.warn("Error fetching active session:", error);
+    return null;
+  }
 }
 
 /**
  * Get all paused sessions for the current user
  */
 export async function getPausedSessions(): Promise<AssistantSession[]> {
+  // DEV MODE: Return empty array
+  if (DEV_SKIP_AUTH) {
+    return [];
+  }
+
   if (!supabase) return [];
 
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) return [];
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return [];
 
-  const { data } = await supabase
-    .from("assistant_sessions")
-    .select("*")
-    .eq("user_id", userData.user.id)
-    .eq("status", "paused")
-    .order("paused_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("assistant_sessions")
+      .select("*")
+      .eq("user_id", userData.user.id)
+      .eq("status", "paused")
+      .order("paused_at", { ascending: false });
 
-  return data || [];
+    if (error) {
+      console.warn("assistant_sessions table may not exist:", error.message);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.warn("Error fetching paused sessions:", error);
+    return [];
+  }
 }
 
 /**
@@ -1027,6 +1140,19 @@ export async function sendAssistantMessage(
   session_update?: Partial<AssistantSession>;
   usage?: { input_tokens: number; output_tokens: number };
 } | null> {
+  // DEV MODE: Return mock response
+  if (DEV_SKIP_AUTH) {
+    console.log("🔓 DEV MODE: Mock assistant message:", message);
+    return {
+      conversation_id: MOCK_CONV_ID,
+      message: `Super! "${message}" ist ein toller Name! 🚀\n\nWo liegt dein App-Code?\n\n• Auf deinem Computer\n• In einem GitHub Repository\n• Noch keinen Code`,
+      session_update: {
+        collected_data: { app_name: message },
+        current_phase: "code_source",
+      },
+    };
+  }
+
   if (!supabase) return null;
 
   const { data, error } = await supabase.functions.invoke("launch-ai-chat", {
