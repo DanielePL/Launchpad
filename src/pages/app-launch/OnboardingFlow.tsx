@@ -37,6 +37,12 @@ export function OnboardingFlow() {
         description: `${answers.app_type} app built with ${answers.tech_stack}`,
         platforms: answers.platforms,
         app_category: answers.app_type,
+        tech_stack: answers.tech_stack,
+        development_status: answers.development_status,
+        has_published_before: answers.has_published_before,
+        has_play_console: answers.has_play_console ?? undefined,
+        has_apple_dev: answers.has_apple_dev ?? undefined,
+        experience_level: answers.experience_level,
       });
 
       if (project) {

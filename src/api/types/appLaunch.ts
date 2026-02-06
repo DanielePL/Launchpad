@@ -147,6 +147,12 @@ export interface AppProject {
   app_category: string | null;
   content_rating: string | null;
   icon_url: string | null;
+  tech_stack: string | null;
+  development_status: string | null;
+  has_published_before: boolean | null;
+  has_play_console: boolean | null;
+  has_apple_dev: boolean | null;
+  experience_level: string | null;
   created_at: string;
   updated_at: string;
   created_by: string | null;
@@ -160,6 +166,12 @@ export interface CreateAppProjectInput {
   bundle_id?: string;
   target_launch_date?: string;
   app_category?: string;
+  tech_stack?: string;
+  development_status?: string;
+  has_published_before?: boolean;
+  has_play_console?: boolean;
+  has_apple_dev?: boolean;
+  experience_level?: string;
 }
 
 export interface UpdateAppProjectInput {
@@ -174,6 +186,12 @@ export interface UpdateAppProjectInput {
   icon_url?: string;
   google_play_url?: string;
   app_store_url?: string;
+  tech_stack?: string;
+  development_status?: string;
+  has_published_before?: boolean;
+  has_play_console?: boolean;
+  has_apple_dev?: boolean;
+  experience_level?: string;
 }
 
 // -----------------------------------------------------------------------------
