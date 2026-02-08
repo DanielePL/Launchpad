@@ -1,4 +1,4 @@
-import { Apple, Play } from "lucide-react";
+import { Apple } from "lucide-react";
 import { useStoreListingForm } from "@/hooks/useStoreListingForm";
 import { StoreListingField } from "./StoreListingField";
 import { CategorySelect } from "./CategorySelect";

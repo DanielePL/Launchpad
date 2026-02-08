@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAppProject } from "@/hooks/useAppLaunch";
 import { Button } from "@/components/ui/button";
 import { StoreListingForm } from "@/components/app-launch/store-listing";
-import { ArrowLeft, FileText, Smartphone, Play, Apple } from "lucide-react";
+import { ArrowLeft, FileText, Play, Apple } from "lucide-react";
 import type { Platform } from "@/api/types/appLaunch";
 
 export function StoreListingPage() {

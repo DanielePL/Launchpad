@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAppProject } from "@/hooks/useAppLaunch";
 import { Button } from "@/components/ui/button";
 import { CredentialWizard } from "@/components/app-launch/credentials";
-import { ArrowLeft, Key, Smartphone, Play, Apple } from "lucide-react";
+import { ArrowLeft, Key, Play, Apple } from "lucide-react";
 import type { Platform } from "@/api/types/appLaunch";
 
 export function CredentialsPage() {

@@ -188,8 +188,6 @@ export function CredentialWizard({ platforms }: CredentialWizardProps) {
   // Category: List credentials in this category
   if (view === "category" && selectedCategory) {
     const categoryTypes = typesPerCategory.get(selectedCategory) || [];
-    const categoryDef = CREDENTIAL_CATEGORIES.find((c) => c.key === selectedCategory);
-
     return (
       <div>
         {breadcrumb}
