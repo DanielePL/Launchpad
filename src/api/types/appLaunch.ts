@@ -404,6 +404,10 @@ export interface CreateAppProjectInput {
   bundle_id?: string;
   target_launch_date?: string;
   app_category?: string;
+  short_description?: string;
+  full_description?: string;
+  keywords?: string;
+  content_rating?: string;
   tech_stack?: string;
   development_status?: string;
   has_published_before?: boolean;

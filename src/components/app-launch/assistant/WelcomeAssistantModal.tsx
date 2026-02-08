@@ -52,6 +52,9 @@ import {
 import { cn } from "@/lib/utils";
 import { aiGenerationService } from "@/api/services/aiGenerationService";
 import { toast } from "sonner";
+import { useCreateAppProject } from "@/hooks/useAppLaunch";
+import { appLaunchEndpoints } from "@/api/endpoints/appLaunch";
+import type { Platform } from "@/api/types/appLaunch";
 
 interface WelcomeAssistantModalProps {
   open: boolean;
@@ -1201,6 +1204,7 @@ function LaunchDatePhase({
 
 export function WelcomeAssistantModal({ open, onClose }: WelcomeAssistantModalProps) {
   const navigate = useNavigate();
+  const createProject = useCreateAppProject();
   const [phase, setPhase] = useState<Phase>("intro");
   const [data, setData] = useState<CollectedData>({});
   const [inputValue, setInputValue] = useState("");
@@ -1239,60 +1243,73 @@ export function WelcomeAssistantModal({ open, onClose }: WelcomeAssistantModalPr
     setIsLoading(true);
 
     try {
-      // Create project structure
-      const projectId = crypto.randomUUID();
-      const project = {
-        id: projectId,
+      // Calculate target launch date from wizard selection
+      let targetLaunchDate: string | undefined;
+      if (data.launch_date) {
+        const now = new Date();
+        const daysMap: Record<string, number> = { asap: 14, month: 30, quarter: 90 };
+        const days = daysMap[data.launch_date];
+        if (days) {
+          const target = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+          targetLaunchDate = target.toISOString().split("T")[0];
+        }
+      }
+
+      // Create project in Supabase
+      const project = await createProject.mutateAsync({
         name: data.app_name || "Neue App",
-        description: data.short_description || "",
-        platforms: data.platforms || ["android", "ios"],
-        status: "setup",
-        completion_percentage: 15,
-        created_at: new Date().toISOString(),
-        // Wizard collected data
-        wizard_data: {
-          code_sources: data.code_sources,
-          github_url: data.github_url,
-          store_accounts: data.store_accounts,
-          category: data.category,
-          short_description: data.short_description,
-          full_description: data.full_description,
-          target_age: data.target_age,
-          content_rating: data.content_rating,
-          has_ads: data.has_ads,
-          has_iap: data.has_iap,
-          monetization: data.monetization,
-          price: data.price,
-          has_privacy_policy: data.has_privacy_policy,
-          privacy_url: data.privacy_url,
-          generated_privacy_policy: data.generated_privacy_policy,
-          countries: data.countries,
-          launch_date: data.launch_date,
-          beta_testing: data.beta_testing,
-        },
-      };
+        description: data.short_description || undefined,
+        short_description: data.short_description || undefined,
+        full_description: data.full_description || undefined,
+        platforms: (data.platforms as Platform[]) || ["android", "ios"],
+        app_category: data.category || undefined,
+        content_rating: data.content_rating || undefined,
+        has_play_console: data.store_accounts?.google ?? undefined,
+        has_apple_dev: data.store_accounts?.apple ?? undefined,
+        target_launch_date: targetLaunchDate,
+      });
 
-      // Save to localStorage (DEV mode - later save to Supabase)
-      const existingProjects = JSON.parse(localStorage.getItem("launchpad_projects") || "[]");
-      existingProjects.unshift(project);
-      localStorage.setItem("launchpad_projects", JSON.stringify(existingProjects));
+      if (!project) {
+        throw new Error("Projekt konnte nicht erstellt werden");
+      }
 
-      // Also save as current draft for quick access
-      localStorage.setItem("launchpad_draft_project", JSON.stringify(project));
+      // Auto-check matching checklist items
+      try {
+        const checklist = await appLaunchEndpoints.getProjectChecklist(project.id);
+
+        // Map wizard values to checklist item_keys
+        const itemKeysToCheck: string[] = [];
+        if (data.app_name) itemKeysToCheck.push("app_title");
+        if (data.short_description) itemKeysToCheck.push("short_description");
+        if (data.full_description) itemKeysToCheck.push("full_description");
+        if (data.category) itemKeysToCheck.push("category");
+        if (data.content_rating) itemKeysToCheck.push("content_rating");
+        if (data.store_accounts?.google === true) itemKeysToCheck.push("play_console_account");
+        if (data.store_accounts?.apple === true) itemKeysToCheck.push("apple_dev_account");
+        if (data.has_privacy_policy && data.privacy_url) itemKeysToCheck.push("privacy_policy");
+
+        // Toggle matching items
+        const togglePromises = checklist
+          .filter((item) => itemKeysToCheck.includes(item.item_key) && !item.is_completed)
+          .map((item) => appLaunchEndpoints.toggleChecklistItem(item.id, true));
+
+        await Promise.all(togglePromises);
+      } catch (checklistError) {
+        // Non-critical: project was created, checklist sync failed
+        console.warn("Checklist auto-check failed:", checklistError);
+      }
 
       toast.success(`Projekt "${data.app_name}" erstellt!`);
 
-      // Close modal and navigate to project
+      // Close modal and navigate to new project
       onClose(false);
 
-      // Reset state
       setTimeout(() => {
         setPhase("intro");
         setData({});
         setInputValue("");
         setHistory([]);
-        // Navigate to the project (or dashboard for now)
-        navigate("/app-launch");
+        navigate(`/app-launch/project/${project.id}`);
       }, 300);
 
     } catch (error) {
