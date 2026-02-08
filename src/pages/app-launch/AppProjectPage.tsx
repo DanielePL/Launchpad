@@ -125,6 +125,12 @@ export function AppProjectPage() {
             </div>
           </div>
         </div>
+        <Link to={`/app-launch/project/${id}/store-listing`}>
+          <Button variant="outline" className="gap-2">
+            <FileText className="h-4 w-4" />
+            Store Listing
+          </Button>
+        </Link>
         <Link to={`/app-launch/project/${id}/credentials`}>
           <Button variant="outline" className="gap-2">
             <Key className="h-4 w-4" />

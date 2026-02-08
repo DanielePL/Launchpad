@@ -67,6 +67,7 @@ const AIAssistantPage = lazy(() => import("@/pages/app-launch/AIAssistantPage").
 const AssetStudioPage = lazy(() => import("@/pages/app-launch/AssetStudioPage").then(m => ({ default: m.AssetStudioPage })));
 const LaunchAssistantPage = lazy(() => import("@/pages/app-launch/LaunchAssistantPage").then(m => ({ default: m.LaunchAssistantPage })));
 const CredentialsPage = lazy(() => import("@/pages/app-launch/CredentialsPage").then(m => ({ default: m.CredentialsPage })));
+const StoreListingPage = lazy(() => import("@/pages/app-launch/StoreListingPage").then(m => ({ default: m.StoreListingPage })));
 
 // Creator Portal - lazy loaded
 const CreatorLayout = lazy(() => import("@/components/creator-portal/CreatorLayout").then(m => ({ default: m.CreatorLayout })));
@@ -437,6 +438,10 @@ export const router = createBrowserRouter([
       {
         path: "app-launch/project/:id/assets",
         element: <LazyLoad><AssetStudioPage /></LazyLoad>,
+      },
+      {
+        path: "app-launch/project/:id/store-listing",
+        element: <LazyLoad><StoreListingPage /></LazyLoad>,
       },
       {
         path: "app-launch/project/:id/credentials",

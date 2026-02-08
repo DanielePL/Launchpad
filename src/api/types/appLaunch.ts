@@ -381,6 +381,9 @@ export interface AppProject {
   app_store_url: string | null;
   app_category: string | null;
   content_rating: string | null;
+  short_description: string | null;
+  full_description: string | null;
+  keywords: string | null;
   icon_url: string | null;
   tech_stack: string | null;
   development_status: string | null;
@@ -418,6 +421,9 @@ export interface UpdateAppProjectInput {
   target_launch_date?: string;
   app_category?: string;
   content_rating?: string;
+  short_description?: string;
+  full_description?: string;
+  keywords?: string;
   icon_url?: string;
   google_play_url?: string;
   app_store_url?: string;
