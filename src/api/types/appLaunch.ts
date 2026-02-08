@@ -62,7 +62,242 @@ export type DocumentType =
   | "data_deletion"
   | "support_url";
 
-export type CredentialPlatform = "google_play" | "app_store";
+export type CredentialPlatform =
+  | "google_play"
+  | "app_store"
+  | "firebase"
+  | "sentry"
+  | "fcm"
+  | "apns"
+  | "revenuecat"
+  | "admob";
+
+export type CredentialTypeKey =
+  | "google_play_service_account"
+  | "app_store_connect_api_key"
+  | "firebase_config"
+  | "sentry_dsn"
+  | "fcm_server_key"
+  | "apns_auth_key"
+  | "revenuecat_api_key"
+  | "admob_app_id";
+
+export type CredentialCategory =
+  | "store_publishing"
+  | "analytics"
+  | "push_notifications"
+  | "revenue_tracking";
+
+export type CredentialFieldType = "text" | "textarea" | "file" | "password";
+
+export interface CredentialField {
+  key: string;
+  label: string;
+  type: CredentialFieldType;
+  placeholder?: string;
+  accept?: string; // For file inputs: ".json", ".p8"
+  required: boolean;
+  helpText?: string;
+}
+
+export interface CredentialTypeDefinition {
+  key: CredentialTypeKey;
+  platform: CredentialPlatform;
+  targetPlatforms: Platform[]; // Which project platforms need this
+  category: CredentialCategory;
+  name: string;
+  description: string;
+  icon: string; // lucide-react icon name
+  fields: CredentialField[];
+  setupSteps: string[];
+  docsUrl?: string;
+}
+
+export interface CredentialCategoryDefinition {
+  key: CredentialCategory;
+  name: string;
+  icon: string;
+  required: boolean;
+}
+
+export const CREDENTIAL_CATEGORIES: CredentialCategoryDefinition[] = [
+  { key: "store_publishing", name: "Store-Veröffentlichung", icon: "Upload", required: true },
+  { key: "analytics", name: "Analytics & Crash-Reporting", icon: "BarChart3", required: false },
+  { key: "push_notifications", name: "Push-Benachrichtigungen", icon: "Bell", required: false },
+  { key: "revenue_tracking", name: "Revenue-Tracking", icon: "DollarSign", required: false },
+];
+
+export const CREDENTIAL_TYPES: CredentialTypeDefinition[] = [
+  // Store Publishing
+  {
+    key: "google_play_service_account",
+    platform: "google_play",
+    targetPlatforms: ["android"],
+    category: "store_publishing",
+    name: "Google Play Service Account",
+    description: "Service Account für automatische Uploads und Store-Verwaltung",
+    icon: "Play",
+    fields: [
+      { key: "service_account_json", label: "Service Account JSON", type: "file", accept: ".json", required: true, helpText: "Die JSON-Datei deines Google Cloud Service Accounts" },
+    ],
+    setupSteps: [
+      "Öffne die Google Cloud Console (console.cloud.google.com)",
+      "Erstelle ein neues Projekt oder wähle ein bestehendes",
+      "Gehe zu \"IAM & Admin\" → \"Service Accounts\"",
+      "Klicke \"Create Service Account\" und vergib einen Namen",
+      "Lade den JSON-Key herunter (Keys → Add Key → JSON)",
+      "Gehe zur Google Play Console → Setup → API Access",
+      "Verknüpfe das Google Cloud Projekt",
+      "Gib dem Service Account die Rechte \"Release Manager\"",
+    ],
+    docsUrl: "https://developers.google.com/android-publisher/getting_started",
+  },
+  {
+    key: "app_store_connect_api_key",
+    platform: "app_store",
+    targetPlatforms: ["ios"],
+    category: "store_publishing",
+    name: "App Store Connect API Key",
+    description: "API-Key für automatische iOS-Uploads und TestFlight",
+    icon: "Apple",
+    fields: [
+      { key: "key_id", label: "Key ID", type: "text", placeholder: "z.B. ABC1234DEF", required: true },
+      { key: "issuer_id", label: "Issuer ID", type: "text", placeholder: "z.B. 12345678-abcd-efgh-ijkl-123456789012", required: true },
+      { key: "p8_file", label: "Private Key (.p8)", type: "file", accept: ".p8", required: true, helpText: "Die .p8-Datei wird nur einmal zum Download angeboten" },
+    ],
+    setupSteps: [
+      "Öffne App Store Connect (appstoreconnect.apple.com)",
+      "Gehe zu \"Users and Access\" → \"Keys\" → \"App Store Connect API\"",
+      "Klicke \"+\" um einen neuen Key zu erstellen",
+      "Wähle die Rolle \"Admin\" oder \"App Manager\"",
+      "Lade die .p8-Datei herunter (nur einmal möglich!)",
+      "Notiere die Key ID und Issuer ID von der Übersichtsseite",
+    ],
+    docsUrl: "https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api",
+  },
+  // Analytics
+  {
+    key: "firebase_config",
+    platform: "firebase",
+    targetPlatforms: ["android", "ios"],
+    category: "analytics",
+    name: "Firebase Configuration",
+    description: "Firebase für Analytics, Crashlytics und mehr",
+    icon: "Flame",
+    fields: [
+      { key: "web_api_key", label: "Web API Key", type: "text", placeholder: "AIzaSy...", required: true },
+      { key: "project_id", label: "Project ID", type: "text", placeholder: "my-app-12345", required: true },
+    ],
+    setupSteps: [
+      "Öffne die Firebase Console (console.firebase.google.com)",
+      "Erstelle ein neues Projekt oder wähle ein bestehendes",
+      "Gehe zu Projekteinstellungen (Zahnrad-Icon)",
+      "Unter \"Allgemein\" findest du die Web API Key und Project ID",
+      "Füge deine Android/iOS-App unter \"Deine Apps\" hinzu",
+    ],
+    docsUrl: "https://firebase.google.com/docs/projects/api-keys",
+  },
+  {
+    key: "sentry_dsn",
+    platform: "sentry",
+    targetPlatforms: ["android", "ios"],
+    category: "analytics",
+    name: "Sentry DSN",
+    description: "Error-Tracking und Performance-Monitoring",
+    icon: "Bug",
+    fields: [
+      { key: "dsn", label: "DSN", type: "text", placeholder: "https://abc123@sentry.io/12345", required: true, helpText: "Die Data Source Name (DSN) URL" },
+    ],
+    setupSteps: [
+      "Erstelle einen Account auf sentry.io",
+      "Erstelle ein neues Projekt (Platform: React Native/Flutter/etc.)",
+      "Die DSN findest du unter Settings → Projects → [Dein Projekt] → Client Keys (DSN)",
+      "Kopiere die vollständige DSN-URL",
+    ],
+    docsUrl: "https://docs.sentry.io/product/sentry-basics/dsn-explainer/",
+  },
+  // Push Notifications
+  {
+    key: "fcm_server_key",
+    platform: "fcm",
+    targetPlatforms: ["android"],
+    category: "push_notifications",
+    name: "FCM Server Key",
+    description: "Firebase Cloud Messaging für Android Push-Notifications",
+    icon: "Bell",
+    fields: [
+      { key: "server_key", label: "Server Key", type: "password", placeholder: "AAAA...", required: true },
+    ],
+    setupSteps: [
+      "Öffne die Firebase Console",
+      "Gehe zu Projekteinstellungen → Cloud Messaging",
+      "Aktiviere die Cloud Messaging API (V1) falls nötig",
+      "Kopiere den Server Key unter \"Project credentials\"",
+    ],
+    docsUrl: "https://firebase.google.com/docs/cloud-messaging",
+  },
+  {
+    key: "apns_auth_key",
+    platform: "apns",
+    targetPlatforms: ["ios"],
+    category: "push_notifications",
+    name: "APNs Auth Key",
+    description: "Apple Push Notification Service für iOS Push-Notifications",
+    icon: "Bell",
+    fields: [
+      { key: "key_id", label: "Key ID", type: "text", placeholder: "z.B. ABC1234DEF", required: true },
+      { key: "team_id", label: "Team ID", type: "text", placeholder: "z.B. ABC1234DEF", required: true },
+      { key: "p8_file", label: "Auth Key (.p8)", type: "file", accept: ".p8", required: true },
+    ],
+    setupSteps: [
+      "Öffne das Apple Developer Portal (developer.apple.com)",
+      "Gehe zu \"Certificates, Identifiers & Profiles\" → \"Keys\"",
+      "Erstelle einen neuen Key und aktiviere \"Apple Push Notifications service (APNs)\"",
+      "Lade die .p8-Datei herunter (nur einmal möglich!)",
+      "Notiere die Key ID und deine Team ID (oben rechts im Portal)",
+    ],
+    docsUrl: "https://developer.apple.com/documentation/usernotifications",
+  },
+  // Revenue Tracking
+  {
+    key: "revenuecat_api_key",
+    platform: "revenuecat",
+    targetPlatforms: ["android", "ios"],
+    category: "revenue_tracking",
+    name: "RevenueCat API Key",
+    description: "In-App-Purchase und Subscription-Management",
+    icon: "CreditCard",
+    fields: [
+      { key: "api_key", label: "Public API Key", type: "password", placeholder: "appl_...", required: true },
+    ],
+    setupSteps: [
+      "Erstelle einen Account auf revenuecat.com",
+      "Erstelle ein neues Projekt",
+      "Gehe zu Project Settings → API Keys",
+      "Kopiere den Public API Key (beginnt mit appl_ oder goog_)",
+    ],
+    docsUrl: "https://docs.revenuecat.com/docs/authentication",
+  },
+  {
+    key: "admob_app_id",
+    platform: "admob",
+    targetPlatforms: ["android", "ios"],
+    category: "revenue_tracking",
+    name: "AdMob App ID",
+    description: "Werbeanzeigen-Integration für App-Monetarisierung",
+    icon: "Megaphone",
+    fields: [
+      { key: "app_id", label: "App ID", type: "text", placeholder: "ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY", required: true },
+    ],
+    setupSteps: [
+      "Erstelle einen AdMob Account (admob.google.com)",
+      "Füge eine neue App hinzu",
+      "Die App ID findest du unter Apps → App-Einstellungen",
+      "Format: ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY",
+    ],
+    docsUrl: "https://developers.google.com/admob/android/quick-start",
+  },
+];
 
 export type ConversationStatus = "active" | "archived" | "resolved";
 
@@ -244,9 +479,15 @@ export interface StoreCredential {
 
 export interface CreateCredentialInput {
   platform: CredentialPlatform;
-  credential_type: string;
+  credential_type: CredentialTypeKey;
   name: string;
-  data: string; // Will be encrypted
+  data: Record<string, string>; // Field key → value mapping
+  metadata?: Record<string, unknown>;
+}
+
+export interface UpdateCredentialInput {
+  name?: string;
+  data?: Record<string, string>;
   metadata?: Record<string, unknown>;
 }
 

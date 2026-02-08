@@ -24,6 +24,7 @@ import {
   ChevronDown,
   ChevronRight,
   Sparkles,
+  Key,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ChecklistCategory } from "@/api/types/appLaunch";
@@ -124,6 +125,12 @@ export function AppProjectPage() {
             </div>
           </div>
         </div>
+        <Link to={`/app-launch/project/${id}/credentials`}>
+          <Button variant="outline" className="gap-2">
+            <Key className="h-4 w-4" />
+            API Keys
+          </Button>
+        </Link>
         <Link to={`/app-launch/project/${id}/assets`}>
           <Button variant="outline" className="gap-2">
             <Image className="h-4 w-4" />

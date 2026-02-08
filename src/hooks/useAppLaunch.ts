@@ -10,6 +10,8 @@ import type {
   UploadAssetInput,
   UpdateAssetInput,
   AssetFilters,
+  CreateCredentialInput,
+  UpdateCredentialInput,
 } from "@/api/types/appLaunch";
 
 // =============================================================================
@@ -28,6 +30,8 @@ export const appLaunchKeys = {
   stats: () => [...appLaunchKeys.all, "stats"] as const,
   assets: (projectId: string, filters?: AssetFilters) => [...appLaunchKeys.all, "assets", projectId, filters] as const,
   assetRequirements: (projectId: string) => [...appLaunchKeys.all, "assetRequirements", projectId] as const,
+  credentials: () => [...appLaunchKeys.all, "credentials"] as const,
+  credential: (id: string) => [...appLaunchKeys.all, "credential", id] as const,
 };
 
 // =============================================================================
@@ -447,6 +451,65 @@ export function useReorderAssets() {
       queryClient.invalidateQueries({
         queryKey: appLaunchKeys.assets(projectId),
       });
+    },
+  });
+}
+
+// =============================================================================
+// Credential Hooks
+// =============================================================================
+
+/**
+ * Get all credentials for the organization
+ */
+export function useOrgCredentials() {
+  return useQuery({
+    queryKey: appLaunchKeys.credentials(),
+    queryFn: appLaunchEndpoints.getOrgCredentials,
+  });
+}
+
+/**
+ * Create a credential
+ */
+export function useCreateCredential() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateCredentialInput) =>
+      appLaunchEndpoints.createCredential(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: appLaunchKeys.credentials() });
+    },
+  });
+}
+
+/**
+ * Update a credential
+ */
+export function useUpdateCredential() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateCredentialInput }) =>
+      appLaunchEndpoints.updateCredential(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: appLaunchKeys.credentials() });
+    },
+  });
+}
+
+/**
+ * Delete a credential
+ */
+export function useDeleteCredential() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (credentialId: string) =>
+      appLaunchEndpoints.deleteCredential(credentialId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: appLaunchKeys.credentials() });
     },
   });
 }

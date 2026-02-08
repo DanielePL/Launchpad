@@ -21,6 +21,9 @@ import type {
   AssetRequirementsStatus,
   RequirementStatus,
   AssistantSession,
+  StoreCredential,
+  CreateCredentialInput,
+  UpdateCredentialInput,
 } from "@/api/types/appLaunch";
 import { SCREENSHOT_REQUIREMENTS } from "@/api/types/appLaunch";
 
@@ -1088,6 +1091,126 @@ export async function completeSession(sessionId: string): Promise<void> {
 }
 
 // =============================================================================
+// Store Credentials
+// =============================================================================
+
+/**
+ * Get all credentials for the organization (without encrypted_data)
+ */
+export async function getOrgCredentials(): Promise<StoreCredential[]> {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("store_credentials")
+    .select("id, organization_id, platform, credential_type, name, is_valid, last_validated_at, expires_at, metadata, created_at, updated_at")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching credentials:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Get a single credential by ID (without encrypted_data)
+ */
+export async function getCredential(credentialId: string): Promise<StoreCredential | null> {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("store_credentials")
+    .select("id, organization_id, platform, credential_type, name, is_valid, last_validated_at, expires_at, metadata, created_at, updated_at")
+    .eq("id", credentialId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching credential:", error);
+    return null;
+  }
+
+  return data;
+}
+
+/**
+ * Create a new credential
+ */
+export async function createCredential(input: CreateCredentialInput): Promise<StoreCredential | null> {
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("store_credentials")
+    .insert({
+      platform: input.platform,
+      credential_type: input.credential_type,
+      name: input.name,
+      encrypted_data: JSON.stringify(input.data),
+      metadata: input.metadata || {},
+    })
+    .select("id, organization_id, platform, credential_type, name, is_valid, last_validated_at, expires_at, metadata, created_at, updated_at")
+    .single();
+
+  if (error) {
+    console.error("Error creating credential:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+/**
+ * Update a credential
+ */
+export async function updateCredential(
+  credentialId: string,
+  input: UpdateCredentialInput
+): Promise<StoreCredential | null> {
+  if (!supabase) return null;
+
+  const updates: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (input.name !== undefined) updates.name = input.name;
+  if (input.data !== undefined) updates.encrypted_data = JSON.stringify(input.data);
+  if (input.metadata !== undefined) updates.metadata = input.metadata;
+
+  const { data, error } = await supabase
+    .from("store_credentials")
+    .update(updates)
+    .eq("id", credentialId)
+    .select("id, organization_id, platform, credential_type, name, is_valid, last_validated_at, expires_at, metadata, created_at, updated_at")
+    .single();
+
+  if (error) {
+    console.error("Error updating credential:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+/**
+ * Delete a credential
+ */
+export async function deleteCredential(credentialId: string): Promise<boolean> {
+  if (!supabase) return false;
+
+  const { error } = await supabase
+    .from("store_credentials")
+    .delete()
+    .eq("id", credentialId);
+
+  if (error) {
+    console.error("Error deleting credential:", error);
+    throw new Error(error.message);
+  }
+
+  return true;
+}
+
+// =============================================================================
 // Export all endpoints
 // =============================================================================
 
@@ -1131,6 +1254,13 @@ export const appLaunchEndpoints = {
   deleteAsset,
   reorderAssets,
   getAssetRequirementsStatus,
+
+  // Credentials
+  getOrgCredentials,
+  getCredential,
+  createCredential,
+  updateCredential,
+  deleteCredential,
 
   // Assistant Sessions
   createAssistantSession,
