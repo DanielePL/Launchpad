@@ -79,12 +79,22 @@ export async function createAppProject(
   if (!supabase) return null;
 
   const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("Not authenticated");
+
+  const { data: membership } = await supabase
+    .from("organization_members")
+    .select("organization_id")
+    .eq("user_id", userData.user.id)
+    .single();
+
+  if (!membership) throw new Error("No organization found");
 
   const { data, error } = await supabase
     .from("app_projects")
     .insert({
       ...input,
-      created_by: userData.user?.id,
+      organization_id: membership.organization_id,
+      created_by: userData.user.id,
     })
     .select()
     .single();
